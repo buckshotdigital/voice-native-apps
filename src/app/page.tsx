@@ -1,0 +1,171 @@
+import Link from 'next/link';
+import { createClient } from '@/lib/supabase/server';
+import AppGrid from '@/components/apps/AppGrid';
+import CategoryIcon from '@/components/ui/CategoryIcon';
+import { ArrowRight } from 'lucide-react';
+
+export default async function HomePage() {
+  const supabase = await createClient();
+
+  const { data: featuredApps } = await supabase
+    .from('apps')
+    .select('*, category:categories(*)')
+    .eq('status', 'approved')
+    .eq('featured', true)
+    .order('upvote_count', { ascending: false })
+    .limit(6);
+
+  const { data: latestApps } = await supabase
+    .from('apps')
+    .select('*, category:categories(*)')
+    .eq('status', 'approved')
+    .order('created_at', { ascending: false })
+    .limit(6);
+
+  const { data: categories } = await supabase
+    .from('categories')
+    .select('*')
+    .order('display_order');
+
+  const { count: totalApps } = await supabase
+    .from('apps')
+    .select('*', { count: 'exact', head: true })
+    .eq('status', 'approved');
+
+  // Get current user + their upvotes for displayed apps
+  const { data: { user } } = await supabase.auth.getUser();
+  const allDisplayedIds = [
+    ...(featuredApps || []).map((a) => a.id),
+    ...(latestApps || []).map((a) => a.id),
+  ];
+  let userUpvotedIds = new Set<string>();
+  if (user && allDisplayedIds.length > 0) {
+    const { data: upvotes } = await supabase
+      .from('upvotes')
+      .select('app_id')
+      .eq('user_id', user.id)
+      .in('app_id', allDisplayedIds);
+    if (upvotes) {
+      userUpvotedIds = new Set(upvotes.map((u) => u.app_id));
+    }
+  }
+
+  return (
+    <div>
+      {/* Hero */}
+      <section className="mx-auto max-w-6xl px-6 pb-16 pt-20 sm:pt-28">
+        <div className="max-w-2xl">
+          <p className="text-[13px] font-medium tracking-wide text-muted uppercase">
+            Voice-native app directory
+          </p>
+          <h1 className="mt-4 text-[clamp(2.25rem,5vw,3.5rem)] font-bold leading-[1.1] tracking-tight text-foreground">
+            Discover apps built
+            <br />
+            for voice first.
+          </h1>
+          <p className="mt-5 max-w-lg text-[17px] leading-relaxed text-muted">
+            A curated directory of applications that treat voice as the primary
+            interface, not an afterthought. Browse, search, and find what&apos;s next.
+          </p>
+
+          {/* Search */}
+          <div className="mt-8 max-w-md">
+            <form action="/apps" method="get">
+              <div className="relative">
+                <svg className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                  <circle cx="11" cy="11" r="8" />
+                  <path d="m21 21-4.3-4.3" />
+                </svg>
+                <input
+                  type="text"
+                  name="q"
+                  placeholder="Search apps..."
+                  className="w-full rounded-lg border bg-white py-2.5 pl-10 pr-4 text-[14px] text-foreground placeholder:text-muted/60 focus:border-foreground/20 focus:outline-none focus:ring-2 focus:ring-foreground/5"
+                />
+              </div>
+            </form>
+          </div>
+
+          {/* Stat */}
+          <p className="mt-6 text-[13px] text-muted">
+            {totalApps || 0} apps listed across {categories?.length || 0} categories
+          </p>
+        </div>
+      </section>
+
+      {/* Categories */}
+      <section className="border-t bg-white">
+        <div className="mx-auto max-w-6xl px-6 py-16">
+          <div className="flex items-baseline justify-between">
+            <h2 className="text-[13px] font-medium tracking-wide text-muted uppercase">Categories</h2>
+            <Link href="/apps" className="flex items-center gap-1 text-[13px] font-medium text-muted transition-colors hover:text-foreground">
+              View all <ArrowRight className="h-3 w-3" />
+            </Link>
+          </div>
+          <div className="mt-6 grid grid-cols-2 gap-px overflow-hidden rounded-lg border bg-border sm:grid-cols-3 md:grid-cols-5">
+            {categories?.map((cat) => (
+              <Link
+                key={cat.id}
+                href={`/apps?category=${cat.slug}`}
+                className="flex flex-col items-center gap-2 bg-white px-4 py-5 text-center transition-colors hover:bg-surface"
+              >
+                <CategoryIcon icon={cat.icon} className="h-5 w-5 text-muted" />
+                <span className="text-[13px] font-medium text-foreground">{cat.name}</span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Featured */}
+      {featuredApps && featuredApps.length > 0 && (
+        <section className="border-t">
+          <div className="mx-auto max-w-6xl px-6 py-16">
+            <h2 className="text-[13px] font-medium tracking-wide text-muted uppercase">Featured</h2>
+            <p className="mt-1 text-[15px] text-foreground">Hand-picked by our team</p>
+            <div className="mt-8">
+              <AppGrid apps={featuredApps} userId={user?.id} userUpvotedIds={userUpvotedIds} />
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Latest */}
+      <section className="border-t bg-white">
+        <div className="mx-auto max-w-6xl px-6 py-16">
+          <div className="flex items-baseline justify-between">
+            <div>
+              <h2 className="text-[13px] font-medium tracking-wide text-muted uppercase">Recently added</h2>
+              <p className="mt-1 text-[15px] text-foreground">The newest voice-native apps</p>
+            </div>
+            <Link href="/apps?sort=newest" className="flex items-center gap-1 text-[13px] font-medium text-muted transition-colors hover:text-foreground">
+              View all <ArrowRight className="h-3 w-3" />
+            </Link>
+          </div>
+          <div className="mt-8">
+            <AppGrid apps={latestApps || []} emptyMessage="No apps listed yet. Be the first to submit one." userId={user?.id} userUpvotedIds={userUpvotedIds} />
+          </div>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="border-t">
+        <div className="mx-auto max-w-6xl px-6 py-20 text-center">
+          <h2 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+            Built something voice-native?
+          </h2>
+          <p className="mx-auto mt-3 max-w-md text-[15px] text-muted">
+            Get your app in front of people who are actively looking for voice-first experiences.
+          </p>
+          <Link
+            href="/submit"
+            className="mt-6 inline-flex items-center gap-2 rounded-lg bg-foreground px-5 py-2.5 text-[14px] font-medium text-white transition-colors hover:bg-foreground/80"
+          >
+            Submit your app
+            <ArrowRight className="h-3.5 w-3.5" />
+          </Link>
+        </div>
+      </section>
+    </div>
+  );
+}

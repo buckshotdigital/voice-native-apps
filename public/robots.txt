@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /dashboard
+Disallow: /auth
+Disallow: /submit
+
+Sitemap: https://voice-native-apps.vercel.app/sitemap.xml
