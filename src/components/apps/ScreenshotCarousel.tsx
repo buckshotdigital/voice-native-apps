@@ -25,24 +25,24 @@ export default function ScreenshotCarousel({ screenshots }: { screenshots: strin
         <>
           <button
             onClick={() => setCurrent((prev) => (prev === 0 ? screenshots.length - 1 : prev - 1))}
-            className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-white/80 p-1.5 shadow-md backdrop-blur-sm transition hover:bg-white"
+            className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-white/80 p-2.5 shadow-md backdrop-blur-sm transition hover:bg-white sm:p-1.5"
           >
             <ChevronLeft className="h-5 w-5 text-gray-700" />
           </button>
           <button
             onClick={() => setCurrent((prev) => (prev === screenshots.length - 1 ? 0 : prev + 1))}
-            className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-white/80 p-1.5 shadow-md backdrop-blur-sm transition hover:bg-white"
+            className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-white/80 p-2.5 shadow-md backdrop-blur-sm transition hover:bg-white sm:p-1.5"
           >
             <ChevronRight className="h-5 w-5 text-gray-700" />
           </button>
 
           {/* Dots */}
-          <div className="mt-3 flex justify-center gap-1.5">
+          <div className="mt-3 flex justify-center gap-2 sm:gap-1.5">
             {screenshots.map((_, i) => (
               <button
                 key={i}
                 onClick={() => setCurrent(i)}
-                className={`h-2 w-2 rounded-full transition ${
+                className={`h-3 w-3 rounded-full transition sm:h-2 sm:w-2 ${
                   i === current ? 'bg-indigo-600' : 'bg-gray-300'
                 }`}
               />

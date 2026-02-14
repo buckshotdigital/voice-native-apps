@@ -21,7 +21,7 @@ export default async function DashboardPage() {
     .from('profiles')
     .select('*')
     .eq('id', user.id)
-    .single();
+    .maybeSingle();
 
   const { data: apps } = await supabase
     .from('apps')
@@ -53,18 +53,18 @@ export default async function DashboardPage() {
       </div>
 
       {/* Stats */}
-      <div className="mt-8 grid grid-cols-3 gap-4">
-        <div className="rounded-xl border border-gray-200 bg-white p-5">
-          <div className="text-2xl font-bold text-yellow-600">{pendingCount}</div>
-          <div className="mt-1 text-sm text-gray-500">Pending Review</div>
+      <div className="mt-8 grid grid-cols-3 gap-2 sm:gap-4">
+        <div className="rounded-xl border border-gray-200 bg-white p-3 sm:p-5">
+          <div className="text-xl font-bold text-yellow-600 sm:text-2xl">{pendingCount}</div>
+          <div className="mt-1 text-xs text-gray-500 sm:text-sm">Pending</div>
         </div>
-        <div className="rounded-xl border border-gray-200 bg-white p-5">
-          <div className="text-2xl font-bold text-green-600">{approvedCount}</div>
-          <div className="mt-1 text-sm text-gray-500">Approved</div>
+        <div className="rounded-xl border border-gray-200 bg-white p-3 sm:p-5">
+          <div className="text-xl font-bold text-green-600 sm:text-2xl">{approvedCount}</div>
+          <div className="mt-1 text-xs text-gray-500 sm:text-sm">Approved</div>
         </div>
-        <div className="rounded-xl border border-gray-200 bg-white p-5">
-          <div className="text-2xl font-bold text-red-600">{rejectedCount}</div>
-          <div className="mt-1 text-sm text-gray-500">Rejected</div>
+        <div className="rounded-xl border border-gray-200 bg-white p-3 sm:p-5">
+          <div className="text-xl font-bold text-red-600 sm:text-2xl">{rejectedCount}</div>
+          <div className="mt-1 text-xs text-gray-500 sm:text-sm">Rejected</div>
         </div>
       </div>
 
@@ -88,10 +88,10 @@ export default async function DashboardPage() {
             {apps.map((app) => (
               <div
                 key={app.id}
-                className="flex items-center gap-4 rounded-xl border border-gray-200 bg-white p-4"
+                className="flex items-start gap-3 rounded-xl border border-gray-200 bg-white p-3 sm:items-center sm:gap-4 sm:p-4"
               >
                 {/* Logo */}
-                <div className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-xl bg-gray-100">
+                <div className="relative h-10 w-10 flex-shrink-0 overflow-hidden rounded-xl bg-gray-100 sm:h-12 sm:w-12">
                   {app.logo_url ? (
                     <Image
                       src={app.logo_url}

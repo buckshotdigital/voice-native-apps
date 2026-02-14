@@ -105,7 +105,7 @@ export default function AuthForm({
               required
               minLength={2}
               maxLength={50}
-              className="mt-1.5 block w-full rounded-lg border bg-white px-3 py-2 text-[14px] text-foreground placeholder:text-muted/50 focus:border-foreground/20 focus:outline-none focus:ring-2 focus:ring-foreground/5"
+              className="mt-1.5 block w-full rounded-lg border bg-white px-3 py-2.5 text-[14px] text-foreground placeholder:text-muted/50 focus:border-foreground/20 focus:outline-none focus:ring-2 focus:ring-foreground/5 sm:py-2"
               placeholder="Your name"
             />
           </div>

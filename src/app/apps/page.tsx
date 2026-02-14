@@ -88,7 +88,7 @@ export default async function BrowseAppsPage({
   }
 
   return (
-    <div className="mx-auto max-w-6xl px-6 py-10">
+    <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
       <div className="mb-8">
         <h1 className="text-2xl font-bold tracking-tight text-foreground">Directory</h1>
         <p className="mt-1 text-[14px] text-muted">

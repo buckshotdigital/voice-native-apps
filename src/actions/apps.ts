@@ -41,7 +41,7 @@ export async function submitApp(data: Record<string, unknown>) {
     .from('profiles')
     .select('submissions_today, last_submission_date')
     .eq('id', user.id)
-    .single();
+    .maybeSingle();
 
   if (profile) {
     const today = new Date().toISOString().split('T')[0];
@@ -161,7 +161,7 @@ export async function updateApp(appId: string, data: Record<string, unknown>) {
     .from('apps')
     .select('id, submitted_by, status')
     .eq('id', appId)
-    .single();
+    .maybeSingle();
 
   if (!app || app.submitted_by !== user.id) {
     return { error: 'App not found or you do not have permission to edit it.' };
@@ -229,7 +229,7 @@ export async function toggleUpvote(appId: string) {
     .select('user_id')
     .eq('user_id', user.id)
     .eq('app_id', appId)
-    .single();
+    .maybeSingle();
 
   if (existing) {
     const { error } = await supabase

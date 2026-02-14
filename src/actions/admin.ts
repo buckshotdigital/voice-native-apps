@@ -15,7 +15,7 @@ async function requireAdmin() {
     .from('profiles')
     .select('role')
     .eq('id', user.id)
-    .single();
+    .maybeSingle();
 
   if (profile?.role !== 'admin') {
     return { error: 'Not authorized', supabase: null, user: null };
@@ -67,7 +67,7 @@ export async function toggleFeatured(appId: string) {
     .from('apps')
     .select('featured')
     .eq('id', appId)
-    .single();
+    .maybeSingle();
 
   if (!app) return { error: 'App not found.' };
 

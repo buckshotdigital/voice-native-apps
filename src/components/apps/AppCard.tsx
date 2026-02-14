@@ -10,11 +10,11 @@ export default function AppCard({ app, userId, userUpvoted }: { app: App; userId
   return (
     <Link
       href={`/apps/${app.slug}`}
-      className="group flex flex-col rounded-lg border bg-white p-4 transition-all hover:border-foreground/15 hover:shadow-sm"
+      className="group flex flex-col rounded-lg border bg-white p-3 transition-all hover:border-foreground/15 hover:shadow-sm sm:p-4"
     >
       {/* Top row: logo + meta */}
-      <div className="flex items-start gap-3.5">
-        <div className="relative h-11 w-11 flex-shrink-0 overflow-hidden rounded-[10px] bg-surface">
+      <div className="flex items-start gap-2.5 sm:gap-3.5">
+        <div className="relative h-10 w-10 flex-shrink-0 overflow-hidden rounded-[10px] bg-surface sm:h-11 sm:w-11">
           {app.logo_url ? (
             <img
               src={app.logo_url}

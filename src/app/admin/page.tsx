@@ -21,7 +21,7 @@ export default async function AdminPage() {
     .from('profiles')
     .select('role')
     .eq('id', user.id)
-    .single();
+    .maybeSingle();
 
   if (profile?.role !== 'admin') redirect('/');
 
@@ -60,27 +60,27 @@ export default async function AdminPage() {
       <h1 className="text-3xl font-bold text-gray-900">Admin Panel</h1>
 
       {/* Stats */}
-      <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
-        <div className="rounded-xl border border-gray-200 bg-white p-5">
-          <div className="flex items-center gap-2 text-yellow-600">
-            <Clock className="h-5 w-5" />
-            <span className="text-2xl font-bold">{pendingCount || 0}</span>
+      <div className="mt-6 grid grid-cols-3 gap-2 sm:gap-4">
+        <div className="rounded-xl border border-gray-200 bg-white p-3 sm:p-5">
+          <div className="flex items-center gap-1.5 text-yellow-600 sm:gap-2">
+            <Clock className="h-4 w-4 sm:h-5 sm:w-5" />
+            <span className="text-xl font-bold sm:text-2xl">{pendingCount || 0}</span>
           </div>
-          <div className="mt-1 text-sm text-gray-500">Pending Review</div>
+          <div className="mt-1 text-xs text-gray-500 sm:text-sm">Pending</div>
         </div>
-        <div className="rounded-xl border border-gray-200 bg-white p-5">
-          <div className="flex items-center gap-2 text-green-600">
-            <CheckCircle className="h-5 w-5" />
-            <span className="text-2xl font-bold">{totalApproved || 0}</span>
+        <div className="rounded-xl border border-gray-200 bg-white p-3 sm:p-5">
+          <div className="flex items-center gap-1.5 text-green-600 sm:gap-2">
+            <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5" />
+            <span className="text-xl font-bold sm:text-2xl">{totalApproved || 0}</span>
           </div>
-          <div className="mt-1 text-sm text-gray-500">Approved Apps</div>
+          <div className="mt-1 text-xs text-gray-500 sm:text-sm">Approved</div>
         </div>
-        <div className="rounded-xl border border-gray-200 bg-white p-5">
-          <div className="flex items-center gap-2 text-red-600">
-            <Flag className="h-5 w-5" />
-            <span className="text-2xl font-bold">{reportCount || 0}</span>
+        <div className="rounded-xl border border-gray-200 bg-white p-3 sm:p-5">
+          <div className="flex items-center gap-1.5 text-red-600 sm:gap-2">
+            <Flag className="h-4 w-4 sm:h-5 sm:w-5" />
+            <span className="text-xl font-bold sm:text-2xl">{reportCount || 0}</span>
           </div>
-          <div className="mt-1 text-sm text-gray-500">Pending Reports</div>
+          <div className="mt-1 text-xs text-gray-500 sm:text-sm">Reports</div>
         </div>
       </div>
 
@@ -101,30 +101,32 @@ export default async function AdminPage() {
             {pendingApps.map((app) => (
               <div
                 key={app.id}
-                className="flex items-center gap-4 rounded-xl border border-yellow-200 bg-yellow-50/50 p-4"
+                className="flex flex-col gap-3 rounded-xl border border-yellow-200 bg-yellow-50/50 p-3 sm:flex-row sm:items-center sm:gap-4 sm:p-4"
               >
-                <div className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-xl bg-gray-100">
-                  {app.logo_url ? (
-                    <Image src={app.logo_url} alt={app.name} fill className="object-cover" sizes="48px" />
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center text-lg font-bold text-gray-400">
-                      {app.name[0]}
-                    </div>
-                  )}
-                </div>
+                <div className="flex items-center gap-3 sm:gap-4">
+                  <div className="relative h-10 w-10 flex-shrink-0 overflow-hidden rounded-xl bg-gray-100 sm:h-12 sm:w-12">
+                    {app.logo_url ? (
+                      <Image src={app.logo_url} alt={app.name} fill className="object-cover" sizes="48px" />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center text-lg font-bold text-gray-400">
+                        {app.name[0]}
+                      </div>
+                    )}
+                  </div>
 
-                <div className="min-w-0 flex-1">
-                  <h3 className="truncate font-semibold text-gray-900">{app.name}</h3>
-                  <p className="truncate text-sm text-gray-500">{app.tagline}</p>
-                  <p className="mt-1 text-xs text-gray-400">
-                    by {(app.submitter as Record<string, string>)?.display_name || (app.submitter as Record<string, string>)?.email || 'Unknown'} &middot;{' '}
-                    {formatDate(app.created_at)}
-                  </p>
+                  <div className="min-w-0 flex-1">
+                    <h3 className="truncate font-semibold text-gray-900">{app.name}</h3>
+                    <p className="truncate text-sm text-gray-500">{app.tagline}</p>
+                    <p className="mt-1 text-xs text-gray-400">
+                      by {(app.submitter as Record<string, string>)?.display_name || (app.submitter as Record<string, string>)?.email || 'Unknown'} &middot;{' '}
+                      {formatDate(app.created_at)}
+                    </p>
+                  </div>
                 </div>
 
                 <Link
                   href={`/admin/app/${app.id}`}
-                  className="flex items-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+                  className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-indigo-700 sm:w-auto sm:py-2"
                 >
                   <Eye className="h-4 w-4" />
                   Review
@@ -151,8 +153,8 @@ export default async function AdminPage() {
                   key={report.id}
                   className="rounded-xl border border-red-200 bg-red-50/50 p-4"
                 >
-                  <div className="flex items-center justify-between">
-                    <div>
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div className="min-w-0 flex-1">
                       <p className="text-sm font-medium text-gray-900">
                         Report on <strong>{app?.name || 'Unknown'}</strong>
                       </p>
@@ -165,7 +167,7 @@ export default async function AdminPage() {
                     {app?.slug && (
                       <Link
                         href={`/admin/app/${report.app_id}`}
-                        className="rounded-lg border border-gray-200 px-3 py-1.5 text-sm text-gray-600 hover:bg-white"
+                        className="flex-shrink-0 rounded-lg border border-gray-200 px-3 py-2 text-center text-sm text-gray-600 hover:bg-white sm:py-1.5"
                       >
                         View App
                       </Link>

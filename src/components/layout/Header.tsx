@@ -147,7 +147,7 @@ export default function Header() {
 
         {/* Mobile toggle */}
         <button
-          className="flex h-8 w-8 items-center justify-center rounded-md text-muted transition-colors hover:bg-surface md:hidden"
+          className="flex h-10 w-10 items-center justify-center rounded-md text-muted transition-colors hover:bg-surface md:hidden"
           onClick={() => setMobileOpen(!mobileOpen)}
         >
           <div className="flex flex-col gap-[5px]">
@@ -159,25 +159,25 @@ export default function Header() {
 
       {/* Mobile nav */}
       {mobileOpen && (
-        <div className="border-t bg-white px-6 py-3 md:hidden">
-          <div className="flex flex-col gap-1">
-            <Link href="/apps" className="rounded-md px-2 py-2 text-[13px] font-medium text-muted hover:text-foreground" onClick={() => setMobileOpen(false)}>
+        <div className="border-t bg-white px-4 py-2 sm:px-6 md:hidden">
+          <div className="flex flex-col">
+            <Link href="/apps" className="rounded-md px-3 py-3 text-[14px] font-medium text-muted hover:bg-surface hover:text-foreground" onClick={() => setMobileOpen(false)}>
               Directory
             </Link>
-            <Link href="/submit" className="rounded-md px-2 py-2 text-[13px] font-medium text-foreground" onClick={() => setMobileOpen(false)}>
+            <Link href="/submit" className="rounded-md px-3 py-3 text-[14px] font-medium text-foreground hover:bg-surface" onClick={() => setMobileOpen(false)}>
               Submit
             </Link>
             {user ? (
               <>
-                <Link href="/dashboard" className="rounded-md px-2 py-2 text-[13px] font-medium text-muted hover:text-foreground" onClick={() => setMobileOpen(false)}>
+                <Link href="/dashboard" className="rounded-md px-3 py-3 text-[14px] font-medium text-muted hover:bg-surface hover:text-foreground" onClick={() => setMobileOpen(false)}>
                   Dashboard
                 </Link>
-                <button onClick={handleSignOut} className="cursor-pointer rounded-md px-2 py-2 text-left text-[13px] font-medium text-muted hover:text-foreground">
+                <button onClick={handleSignOut} className="cursor-pointer rounded-md px-3 py-3 text-left text-[14px] font-medium text-muted hover:bg-surface hover:text-foreground">
                   Sign out
                 </button>
               </>
             ) : (
-              <Link href="/auth/login" className="rounded-md px-2 py-2 text-[13px] font-medium text-muted hover:text-foreground" onClick={() => setMobileOpen(false)}>
+              <Link href="/auth/login" className="rounded-md px-3 py-3 text-[14px] font-medium text-muted hover:bg-surface hover:text-foreground" onClick={() => setMobileOpen(false)}>
                 Sign in
               </Link>
             )}

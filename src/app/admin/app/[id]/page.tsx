@@ -29,7 +29,7 @@ export default async function AdminAppReviewPage({
     .from('profiles')
     .select('role')
     .eq('id', user.id)
-    .single();
+    .maybeSingle();
 
   if (profile?.role !== 'admin') redirect('/');
 
@@ -37,7 +37,7 @@ export default async function AdminAppReviewPage({
     .from('apps')
     .select('*, category:categories(*), submitter:profiles!submitted_by(display_name, email)')
     .eq('id', id)
-    .single();
+    .maybeSingle();
 
   if (!app) notFound();
 

@@ -53,12 +53,12 @@ export default async function HomePage() {
   return (
     <div>
       {/* Hero */}
-      <section className="mx-auto max-w-6xl px-6 pb-16 pt-20 sm:pt-28">
+      <section className="mx-auto max-w-6xl px-4 pb-16 pt-16 sm:px-6 sm:pt-28">
         <div className="max-w-2xl">
           <p className="text-[13px] font-medium tracking-wide text-muted uppercase">
             Voice-native app directory
           </p>
-          <h1 className="mt-4 text-[clamp(2.25rem,5vw,3.5rem)] font-bold leading-[1.1] tracking-tight text-foreground">
+          <h1 className="mt-4 text-[clamp(1.875rem,5vw,3.5rem)] font-bold leading-[1.1] tracking-tight text-foreground">
             Discover apps built
             <br />
             for voice first.
@@ -95,7 +95,7 @@ export default async function HomePage() {
 
       {/* Categories */}
       <section className="border-t bg-white">
-        <div className="mx-auto max-w-6xl px-6 py-16">
+        <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-16">
           <div className="flex items-baseline justify-between">
             <h2 className="text-[13px] font-medium tracking-wide text-muted uppercase">Categories</h2>
             <Link href="/apps" className="flex items-center gap-1 text-[13px] font-medium text-muted transition-colors hover:text-foreground">
@@ -120,7 +120,7 @@ export default async function HomePage() {
       {/* Featured */}
       {featuredApps && featuredApps.length > 0 && (
         <section className="border-t">
-          <div className="mx-auto max-w-6xl px-6 py-16">
+          <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-16">
             <h2 className="text-[13px] font-medium tracking-wide text-muted uppercase">Featured</h2>
             <p className="mt-1 text-[15px] text-foreground">Hand-picked by our team</p>
             <div className="mt-8">
@@ -132,7 +132,7 @@ export default async function HomePage() {
 
       {/* Latest */}
       <section className="border-t bg-white">
-        <div className="mx-auto max-w-6xl px-6 py-16">
+        <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-16">
           <div className="flex items-baseline justify-between">
             <div>
               <h2 className="text-[13px] font-medium tracking-wide text-muted uppercase">Recently added</h2>
@@ -150,7 +150,7 @@ export default async function HomePage() {
 
       {/* CTA */}
       <section className="border-t">
-        <div className="mx-auto max-w-6xl px-6 py-20 text-center">
+        <div className="mx-auto max-w-6xl px-4 py-14 text-center sm:px-6 sm:py-20">
           <h2 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
             Built something voice-native?
           </h2>

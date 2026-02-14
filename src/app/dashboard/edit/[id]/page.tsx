@@ -23,7 +23,7 @@ export default async function EditAppPage({
     .select('*')
     .eq('id', id)
     .eq('submitted_by', user.id)
-    .single();
+    .maybeSingle();
 
   if (!app) notFound();
 

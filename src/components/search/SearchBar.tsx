@@ -36,7 +36,7 @@ export default function SearchBar({ basePath = '/apps' }: { basePath?: string })
           if (e.key === 'Enter') handleSearch(query);
         }}
         placeholder="Search apps..."
-        className="w-full rounded-lg border bg-white py-2 pl-9 pr-3 text-[14px] text-foreground placeholder:text-muted/50 focus:border-foreground/20 focus:outline-none focus:ring-2 focus:ring-foreground/5"
+        className="w-full rounded-lg border bg-white py-2.5 pl-9 pr-3 text-[14px] text-foreground placeholder:text-muted/50 focus:border-foreground/20 focus:outline-none focus:ring-2 focus:ring-foreground/5 sm:py-2"
       />
       {query && (
         <button

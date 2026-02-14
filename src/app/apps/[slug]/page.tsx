@@ -79,7 +79,7 @@ export default async function AppDetailPage({
       .select('user_id')
       .eq('user_id', user.id)
       .eq('app_id', app.id)
-      .single();
+      .maybeSingle();
     hasUpvoted = !!upvote;
   }
 
@@ -98,12 +98,12 @@ export default async function AppDetailPage({
         Back to directory
       </Link>
 
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-6 sm:gap-8 lg:grid-cols-3">
         {/* Main content */}
         <div className="lg:col-span-2">
           {/* Header */}
-          <div className="flex items-start gap-5">
-            <div className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-2xl bg-gray-100">
+          <div className="flex items-start gap-3 sm:gap-5">
+            <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-2xl bg-gray-100 sm:h-20 sm:w-20">
               {app.logo_url ? (
                 <img
                   src={app.logo_url}
