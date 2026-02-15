@@ -13,7 +13,7 @@ export async function submitReport(data: { app_id: string; reason: string; detai
   }
 
   // Rate limit: 5 reports per 10 minutes per user
-  const rl = rateLimit(`report:${user.id}`, { maxRequests: 5, windowMs: 10 * 60 * 1000 });
+  const rl = await rateLimit(supabase, `report:${user.id}`, { maxRequests: 5, windowSeconds: 600 });
   if (!rl.success) {
     return { error: 'Too many reports. Please wait a few minutes and try again.' };
   }

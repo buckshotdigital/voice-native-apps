@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { truncate, formatNumber } from '@/lib/utils';
+import { truncate } from '@/lib/utils';
 import type { App } from '@/types';
 import { PLATFORMS, PRICING_MODELS } from '@/lib/constants';
 import UpvoteChip from './UpvoteChip';

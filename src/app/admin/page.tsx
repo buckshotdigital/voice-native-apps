@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { createClient } from '@/lib/supabase/server';
 import StatusBadge from '@/components/ui/StatusBadge';
 import { formatDate } from '@/lib/utils';
-import { Eye, Clock, CheckCircle, XCircle, Flag, AlertTriangle } from 'lucide-react';
+import { Eye, Clock, CheckCircle, Flag, AlertTriangle } from 'lucide-react';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {

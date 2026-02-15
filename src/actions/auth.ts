@@ -7,14 +7,13 @@ import { rateLimit } from '@/lib/rate-limit';
 
 export async function signUp(formData: FormData) {
   const email = (formData.get('email') as string) || '';
+  const supabase = await createClient();
 
   // Rate limit: 5 signup attempts per 15 minutes per email
-  const rl = rateLimit(`signup:${email.toLowerCase()}`, { maxRequests: 5, windowMs: 15 * 60 * 1000 });
+  const rl = await rateLimit(supabase, `signup:${email.toLowerCase()}`, { maxRequests: 5, windowSeconds: 900 });
   if (!rl.success) {
     return { error: 'Too many signup attempts. Please wait a few minutes and try again.' };
   }
-
-  const supabase = await createClient();
 
   const raw = {
     email,
@@ -44,14 +43,13 @@ export async function signUp(formData: FormData) {
 
 export async function signIn(formData: FormData) {
   const email = (formData.get('email') as string) || '';
+  const supabase = await createClient();
 
   // Rate limit: 10 login attempts per 15 minutes per email
-  const rl = rateLimit(`signin:${email.toLowerCase()}`, { maxRequests: 10, windowMs: 15 * 60 * 1000 });
+  const rl = await rateLimit(supabase, `signin:${email.toLowerCase()}`, { maxRequests: 10, windowSeconds: 900 });
   if (!rl.success) {
     return { error: 'Too many login attempts. Please wait a few minutes and try again.' };
   }
-
-  const supabase = await createClient();
 
   const raw = {
     email,

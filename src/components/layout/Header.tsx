@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { LogOut, LayoutDashboard, Shield, ChevronDown } from 'lucide-react';
 import type { Profile } from '@/types';
@@ -14,10 +13,10 @@ export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
-  const router = useRouter();
-  const supabase = createClient();
+  const supabaseRef = useRef(createClient());
 
   useEffect(() => {
+    const supabase = supabaseRef.current;
     async function getUser() {
       const { data: { user } } = await supabase.auth.getUser();
       setUser(user);
@@ -57,7 +56,7 @@ export default function Header() {
   }, []);
 
   async function handleSignOut() {
-    await supabase.auth.signOut();
+    await supabaseRef.current.auth.signOut();
     setUser(null);
     setProfile(null);
     setMenuOpen(false);

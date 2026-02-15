@@ -1,6 +1,12 @@
 import type { NextConfig } from "next";
+import { resolve } from "path";
 
 const nextConfig: NextConfig = {
+  // Pin Turbopack root to this project dir so it doesn't infer
+  // workspace root from a stray parent package-lock.json
+  turbopack: {
+    root: resolve(import.meta.dirname),
+  },
   images: {
     remotePatterns: [
       {
@@ -18,6 +24,53 @@ const nextConfig: NextConfig = {
         hostname: 't*.gstatic.com',
       },
     ],
+  },
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff',
+          },
+          {
+            key: 'X-Frame-Options',
+            value: 'DENY',
+          },
+          {
+            key: 'Referrer-Policy',
+            value: 'strict-origin-when-cross-origin',
+          },
+          {
+            key: 'X-DNS-Prefetch-Control',
+            value: 'on',
+          },
+          {
+            key: 'Strict-Transport-Security',
+            value: 'max-age=31536000; includeSubDomains',
+          },
+          {
+            key: 'Permissions-Policy',
+            value: 'camera=(), microphone=(), geolocation=()',
+          },
+          {
+            key: 'Content-Security-Policy',
+            value: [
+              "default-src 'self'",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+              "style-src 'self' 'unsafe-inline'",
+              "img-src 'self' https://*.supabase.co https://www.google.com https://*.gstatic.com data:",
+              "font-src 'self'",
+              "connect-src 'self' https://*.supabase.co",
+              "frame-ancestors 'none'",
+              "base-uri 'self'",
+              "form-action 'self'",
+            ].join('; '),
+          },
+        ],
+      },
+    ];
   },
 };
 

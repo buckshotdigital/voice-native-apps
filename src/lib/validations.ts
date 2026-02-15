@@ -1,6 +1,13 @@
 import { z } from 'zod';
 import { APP_STORE_URL_REGEX, PLAY_STORE_URL_REGEX } from './constants';
 
+/** Zod .url() accepts javascript: and data: protocols. This refinement restricts to http/https. */
+const httpUrl = (message = 'Please enter a valid URL') =>
+  z.string().url(message).refine(
+    (url) => url.startsWith('https://') || url.startsWith('http://'),
+    { message: 'URL must start with https:// or http://' }
+  );
+
 export const submitAppSchema = z.object({
   name: z.string().min(1, 'Name is required').max(100, 'Name must be under 100 characters'),
   tagline: z.string().min(10, 'Tagline must be at least 10 characters').max(150, 'Tagline must be under 150 characters'),
@@ -8,11 +15,11 @@ export const submitAppSchema = z.object({
   category_id: z.string().uuid('Please select a category'),
   voice_features: z.array(z.string()).min(1, 'Select at least one voice feature'),
   platforms: z.array(z.enum(['ios', 'android', 'web', 'macos', 'windows', 'linux', 'alexa', 'google_assistant'])).min(1, 'Select at least one platform'),
-  website_url: z.string().url('Please enter a valid URL'),
-  app_store_url: z.string().url().regex(APP_STORE_URL_REGEX, 'Must be a valid App Store URL').optional().or(z.literal('')),
-  play_store_url: z.string().url().regex(PLAY_STORE_URL_REGEX, 'Must be a valid Play Store URL').optional().or(z.literal('')),
-  other_download_url: z.string().url('Please enter a valid URL').optional().or(z.literal('')),
-  demo_video_url: z.string().url('Please enter a valid URL').optional().or(z.literal('')),
+  website_url: httpUrl(),
+  app_store_url: httpUrl().regex(APP_STORE_URL_REGEX, 'Must be a valid App Store URL').optional().or(z.literal('')),
+  play_store_url: httpUrl().regex(PLAY_STORE_URL_REGEX, 'Must be a valid Play Store URL').optional().or(z.literal('')),
+  other_download_url: httpUrl().optional().or(z.literal('')),
+  demo_video_url: httpUrl().optional().or(z.literal('')),
   pricing_model: z.enum(['free', 'freemium', 'paid', 'subscription']),
   pricing_details: z.string().max(100).optional().or(z.literal('')),
   tags: z.array(z.string()).max(10, 'Maximum 10 tags'),

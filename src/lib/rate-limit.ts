@@ -1,38 +1,32 @@
 /**
- * Simple in-memory rate limiter for server actions.
- * Uses a sliding window approach. Resets automatically when entries expire.
- * Note: This is per-instance — each serverless invocation has its own memory.
- * For stricter limiting at scale, use Redis or Supabase-based rate limiting.
+ * Database-backed rate limiter using Supabase RPC.
+ * Works across all serverless instances (unlike in-memory Map).
+ * Falls back to allowing the request if the DB call fails,
+ * to avoid blocking legitimate users on transient errors.
  */
 
-const store = new Map<string, { count: number; resetAt: number }>();
+import type { SupabaseClient } from '@supabase/supabase-js';
 
-// Clean up expired entries periodically
-setInterval(() => {
-  const now = Date.now();
-  for (const [key, entry] of store) {
-    if (now > entry.resetAt) {
-      store.delete(key);
-    }
-  }
-}, 60_000);
-
-export function rateLimit(
+export async function rateLimit(
+  supabase: SupabaseClient,
   key: string,
-  { maxRequests, windowMs }: { maxRequests: number; windowMs: number }
-): { success: boolean; remaining: number } {
-  const now = Date.now();
-  const entry = store.get(key);
+  { maxRequests, windowSeconds }: { maxRequests: number; windowSeconds: number }
+): Promise<{ success: boolean }> {
+  try {
+    const { data: allowed, error } = await supabase.rpc('check_rate_limit', {
+      p_key: key,
+      p_max_requests: maxRequests,
+      p_window_seconds: windowSeconds,
+    });
 
-  if (!entry || now > entry.resetAt) {
-    store.set(key, { count: 1, resetAt: now + windowMs });
-    return { success: true, remaining: maxRequests - 1 };
+    if (error) {
+      console.error('Rate limit check failed:', error.message);
+      return { success: true }; // fail-open on DB errors
+    }
+
+    return { success: !!allowed };
+  } catch (e) {
+    console.error('Rate limit error:', e);
+    return { success: true }; // fail-open
   }
-
-  if (entry.count >= maxRequests) {
-    return { success: false, remaining: 0 };
-  }
-
-  entry.count++;
-  return { success: true, remaining: maxRequests - entry.count };
 }

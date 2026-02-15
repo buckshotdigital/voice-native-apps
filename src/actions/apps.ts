@@ -8,6 +8,18 @@ import { slugify } from '@/lib/utils';
 import { revalidatePath } from 'next/cache';
 import { rateLimit } from '@/lib/rate-limit';
 
+/** Validate that a URL points to our Supabase storage bucket */
+function isValidStorageUrl(url: string): boolean {
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === 'https:'
+      && parsed.hostname.endsWith('.supabase.co')
+      && parsed.pathname.startsWith('/storage/v1/object/public/app-assets/');
+  } catch {
+    return false;
+  }
+}
+
 export async function submitApp(data: Record<string, unknown>) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -17,14 +29,13 @@ export async function submitApp(data: Record<string, unknown>) {
   }
 
   // Rate limit: 5 submissions per 10 minutes per user
-  const rl = rateLimit(`submit:${user.id}`, { maxRequests: 5, windowMs: 10 * 60 * 1000 });
+  const rl = await rateLimit(supabase, `submit:${user.id}`, { maxRequests: 5, windowSeconds: 600 });
   if (!rl.success) {
     return { error: 'Too many submissions. Please wait a few minutes and try again.' };
   }
 
   // Honeypot check
   if (data.website2) {
-    // Silently reject bots — return success to avoid detection
     return { success: true, id: 'fake' };
   }
 
@@ -36,21 +47,32 @@ export async function submitApp(data: Record<string, unknown>) {
 
   const input = parsed.data;
 
-  // Rate limit check
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('submissions_today, last_submission_date')
-    .eq('id', user.id)
-    .maybeSingle();
+  // Server-side validation of uploaded image URLs
+  const logoUrl = (data.logo_url as string) || '';
+  if (logoUrl && !isValidStorageUrl(logoUrl)) {
+    return { error: 'Invalid logo URL. Please upload an image using the form.' };
+  }
 
-  if (profile) {
-    const today = new Date().toISOString().split('T')[0];
-    const isToday = profile.last_submission_date === today;
-    const todayCount = isToday ? profile.submissions_today : 0;
-
-    if (todayCount >= MAX_SUBMISSIONS_PER_DAY) {
-      return { error: `You can submit a maximum of ${MAX_SUBMISSIONS_PER_DAY} apps per day. Please try again tomorrow.` };
+  const screenshotUrls = (data.screenshot_urls as string[]) || [];
+  for (const url of screenshotUrls) {
+    if (!isValidStorageUrl(url)) {
+      return { error: 'Invalid screenshot URL. Please upload images using the form.' };
     }
+  }
+
+  // Atomic daily submission check — prevents race condition (Finding 4)
+  const { data: allowed, error: quotaError } = await supabase.rpc(
+    'check_and_increment_submissions',
+    { p_user_id: user.id, p_max_submissions: MAX_SUBMISSIONS_PER_DAY }
+  );
+
+  if (quotaError) {
+    console.error('Submission quota check failed:', quotaError.message);
+    return { error: 'Unable to verify submission quota. Please try again.' };
+  }
+
+  if (!allowed) {
+    return { error: `You can submit a maximum of ${MAX_SUBMISSIONS_PER_DAY} apps per day. Please try again tomorrow.` };
   }
 
   // Duplicate check by website URL
@@ -83,7 +105,6 @@ export async function submitApp(data: Record<string, unknown>) {
   let slug = slugify(input.name);
   const { data: existingSlug } = await adminClient.from('apps').select('id').eq('slug', slug).maybeSingle();
   if (existingSlug) {
-    // Append timestamp suffix for uniqueness
     slug = `${slug}-${Date.now().toString(36)}`;
   }
 
@@ -104,8 +125,8 @@ export async function submitApp(data: Record<string, unknown>) {
     demo_video_url: cleanUrl(input.demo_video_url),
     pricing_model: input.pricing_model,
     pricing_details: input.pricing_details?.trim() || null,
-    logo_url: (data.logo_url as string) || '',
-    screenshot_urls: (data.screenshot_urls as string[]) || [],
+    logo_url: logoUrl,
+    screenshot_urls: screenshotUrls,
     status: 'pending',
   }).select('id').single();
 
@@ -118,7 +139,6 @@ export async function submitApp(data: Record<string, unknown>) {
     if (input.tags && input.tags.length > 0) {
       for (const tagName of input.tags) {
         const tagSlug = slugify(tagName);
-        // Upsert tag
         const { data: tag } = await supabase
           .from('tags')
           .upsert({ name: tagName.toLowerCase().trim(), slug: tagSlug }, { onConflict: 'slug' })
@@ -132,17 +152,7 @@ export async function submitApp(data: Record<string, unknown>) {
     }
   } catch (tagError) {
     console.error('Tag creation failed:', tagError);
-    // Tags are non-critical — app is already created, continue
   }
-
-  // Update rate limit counter
-  const today = new Date().toISOString().split('T')[0];
-  const isToday = profile?.last_submission_date === today;
-
-  await supabase.from('profiles').update({
-    submissions_today: isToday ? (profile?.submissions_today || 0) + 1 : 1,
-    last_submission_date: today,
-  }).eq('id', user.id);
 
   revalidatePath('/dashboard');
   return { success: true, id: newApp?.id };
@@ -179,6 +189,19 @@ export async function updateApp(appId: string, data: Record<string, unknown>) {
   const input = parsed.data;
   const cleanUrl = (url?: string) => (url && url.trim() !== '' ? url.trim() : null);
 
+  // Server-side validation of uploaded image URLs
+  const logoUrl = (data.logo_url as string) || '';
+  if (logoUrl && !isValidStorageUrl(logoUrl)) {
+    return { error: 'Invalid logo URL. Please upload an image using the form.' };
+  }
+
+  const screenshotUrls = (data.screenshot_urls as string[]) || [];
+  for (const url of screenshotUrls) {
+    if (!isValidStorageUrl(url)) {
+      return { error: 'Invalid screenshot URL. Please upload images using the form.' };
+    }
+  }
+
   const { error: updateError } = await supabase
     .from('apps')
     .update({
@@ -195,9 +218,9 @@ export async function updateApp(appId: string, data: Record<string, unknown>) {
       demo_video_url: cleanUrl(input.demo_video_url),
       pricing_model: input.pricing_model,
       pricing_details: input.pricing_details?.trim() || null,
-      logo_url: (data.logo_url as string) || '',
-      screenshot_urls: (data.screenshot_urls as string[]) || [],
-      status: 'pending', // Re-submit for review
+      logo_url: logoUrl,
+      screenshot_urls: screenshotUrls,
+      status: 'pending',
     })
     .eq('id', appId);
 
@@ -218,7 +241,7 @@ export async function toggleUpvote(appId: string) {
   }
 
   // Rate limit: 30 upvote toggles per minute per user
-  const rl = rateLimit(`upvote:${user.id}`, { maxRequests: 30, windowMs: 60 * 1000 });
+  const rl = await rateLimit(supabase, `upvote:${user.id}`, { maxRequests: 30, windowSeconds: 60 });
   if (!rl.success) {
     return { error: 'Too many requests. Please slow down.' };
   }

@@ -39,7 +39,7 @@ console.log('\n--- Pre-flight checks ---\n');
 // 1. Database connectivity
 console.log('Database:');
 try {
-  const { data, error } = await admin.from('apps').select('id', { count: 'exact', head: true });
+  const { error } = await admin.from('apps').select('id', { count: 'exact', head: true });
   if (error) throw error;
   ok('Connected to database');
 } catch (e) {

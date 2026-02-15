@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { X } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 
@@ -15,29 +15,37 @@ export default function TagInput({ value, onChange, maxTags = 10 }: TagInputProp
   const [suggestions, setSuggestions] = useState<{ id: string; name: string }[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
-  const supabase = createClient();
+  const supabaseRef = useRef(createClient());
+
+  // Derived state: when input is too short, suggestions should be empty.
+  // We use useMemo to clear suggestions without calling setState in an effect.
+  const activeSuggestions = useMemo(
+    () => (input.length < 2 ? [] : suggestions),
+    [input, suggestions]
+  );
+
+  const fetchSuggestions = useCallback(async (query: string, currentTags: string[]) => {
+    const { data } = await supabaseRef.current
+      .from('tags')
+      .select('id, name')
+      .ilike('name', `%${query}%`)
+      .limit(5);
+
+    setSuggestions(
+      (data || []).filter((t) => !currentTags.includes(t.name))
+    );
+    setShowSuggestions(true);
+  }, []);
 
   useEffect(() => {
-    if (input.length < 2) {
-      setSuggestions([]);
-      return;
-    }
+    if (input.length < 2) return;
 
-    const timer = setTimeout(async () => {
-      const { data } = await supabase
-        .from('tags')
-        .select('id, name')
-        .ilike('name', `%${input}%`)
-        .limit(5);
-
-      setSuggestions(
-        (data || []).filter((t) => !value.includes(t.name))
-      );
-      setShowSuggestions(true);
+    const timer = setTimeout(() => {
+      fetchSuggestions(input, value);
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [input, value]);
+  }, [input, value, fetchSuggestions]);
 
   function addTag(tag: string) {
     const cleaned = tag.toLowerCase().trim();
@@ -94,9 +102,9 @@ export default function TagInput({ value, onChange, maxTags = 10 }: TagInputProp
               />
 
               {/* Suggestions */}
-              {showSuggestions && suggestions.length > 0 && (
+              {showSuggestions && activeSuggestions.length > 0 && (
                 <div className="absolute left-0 top-full z-10 mt-1 w-48 rounded-lg border border-gray-200 bg-white py-1 shadow-lg">
-                  {suggestions.map((s) => (
+                  {activeSuggestions.map((s) => (
                     <button
                       key={s.id}
                       type="button"

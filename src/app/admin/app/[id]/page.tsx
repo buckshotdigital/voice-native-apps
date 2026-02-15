@@ -7,7 +7,7 @@ import PricingBadge from '@/components/apps/PricingBadge';
 import StatusBadge from '@/components/ui/StatusBadge';
 import AdminAppActions from './AdminAppActions';
 import { formatDate } from '@/lib/utils';
-import { ArrowLeft, Globe, ExternalLink, Mic } from 'lucide-react';
+import { ArrowLeft, ExternalLink, Mic } from 'lucide-react';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
