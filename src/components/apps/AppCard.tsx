@@ -4,8 +4,9 @@ import { truncate } from '@/lib/utils';
 import type { App } from '@/types';
 import { PLATFORMS, PRICING_MODELS } from '@/lib/constants';
 import UpvoteChip from './UpvoteChip';
+import InterestChip from './InterestChip';
 
-export default function AppCard({ app, userId, userUpvoted }: { app: App; userId?: string | null; userUpvoted?: boolean }) {
+export default function AppCard({ app, userId, userUpvoted, userInterested }: { app: App; userId?: string | null; userUpvoted?: boolean; userInterested?: boolean }) {
   const pricing = PRICING_MODELS.find((p) => p.value === app.pricing_model);
 
   return (
@@ -36,7 +37,12 @@ export default function AppCard({ app, userId, userUpvoted }: { app: App; userId
             <h3 className="truncate text-[14px] font-semibold text-foreground group-hover:text-accent">
               {app.name}
             </h3>
-            {app.featured && (
+            {app.is_coming_soon && (
+              <span className="flex-shrink-0 rounded bg-blue-100 px-1.5 py-0.5 text-[10px] font-semibold text-blue-700">
+                COMING SOON
+              </span>
+            )}
+            {app.featured && !app.is_coming_soon && (
               <span className="flex-shrink-0 rounded bg-accent/8 px-1.5 py-0.5 text-[10px] font-semibold text-accent">
                 FEATURED
               </span>
@@ -68,12 +74,21 @@ export default function AppCard({ app, userId, userUpvoted }: { app: App; userId
           {pricing && (
             <span className="text-[11px] font-medium text-muted">{pricing.label}</span>
           )}
-          <UpvoteChip
-            appId={app.id}
-            initialCount={app.upvote_count}
-            initialUpvoted={!!userUpvoted}
-            userId={userId ?? null}
-          />
+          {app.is_coming_soon ? (
+            <InterestChip
+              appId={app.id}
+              initialCount={app.interest_count}
+              initialInterested={!!userInterested}
+              userId={userId ?? null}
+            />
+          ) : (
+            <UpvoteChip
+              appId={app.id}
+              initialCount={app.upvote_count}
+              initialUpvoted={!!userUpvoted}
+              userId={userId ?? null}
+            />
+          )}
         </div>
       </div>
     </Link>

@@ -6,11 +6,13 @@ export default function AppGrid({
   emptyMessage,
   userId,
   userUpvotedIds,
+  userInterestedIds,
 }: {
   apps: App[];
   emptyMessage?: string;
   userId?: string | null;
   userUpvotedIds?: Set<string>;
+  userInterestedIds?: Set<string>;
 }) {
   if (apps.length === 0) {
     return (
@@ -28,6 +30,7 @@ export default function AppGrid({
           app={app}
           userId={userId}
           userUpvoted={userUpvotedIds?.has(app.id)}
+          userInterested={userInterestedIds?.has(app.id)}
         />
       ))}
     </div>

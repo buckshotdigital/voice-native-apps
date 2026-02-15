@@ -47,6 +47,9 @@ export interface App {
   status: AppStatus;
   rejection_reason: string | null;
   featured: boolean;
+  is_coming_soon: boolean;
+  expected_launch_date: string | null;
+  interest_count: number;
   upvote_count: number;
   view_count: number;
   created_at: string;
@@ -56,6 +59,7 @@ export interface App {
   profile?: Pick<Profile, 'display_name' | 'avatar_url'>;
   tags?: Tag[];
   user_has_upvoted?: boolean;
+  user_has_interested?: boolean;
 }
 
 export interface Tag {
@@ -70,6 +74,12 @@ export interface AppTag {
 }
 
 export interface Upvote {
+  user_id: string;
+  app_id: string;
+  created_at: string;
+}
+
+export interface AppInterest {
   user_id: string;
   app_id: string;
   created_at: string;
@@ -99,6 +109,8 @@ export interface SubmitAppFormData {
   demo_video_url?: string;
   pricing_model: PricingModel;
   pricing_details?: string;
+  is_coming_soon?: boolean;
+  expected_launch_date?: string;
   tags: string[];
   // honeypot
   website2?: string;

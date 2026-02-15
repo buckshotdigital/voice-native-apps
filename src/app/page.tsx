@@ -27,6 +27,14 @@ export default async function HomePage() {
     .order('upvote_count', { ascending: false })
     .limit(6);
 
+  const { data: comingSoonApps } = await supabase
+    .from('apps')
+    .select('*, category:categories(*)')
+    .eq('status', 'approved')
+    .eq('is_coming_soon', true)
+    .order('interest_count', { ascending: false })
+    .limit(6);
+
   const { data: latestApps } = await supabase
     .from('apps')
     .select('*, category:categories(*)')
@@ -44,13 +52,15 @@ export default async function HomePage() {
     .select('*', { count: 'exact', head: true })
     .eq('status', 'approved');
 
-  // Get current user + their upvotes for displayed apps
+  // Get current user + their upvotes/interests for displayed apps
   const { data: { user } } = await supabase.auth.getUser();
   const allDisplayedIds = [
     ...(featuredApps || []).map((a) => a.id),
+    ...(comingSoonApps || []).map((a) => a.id),
     ...(latestApps || []).map((a) => a.id),
   ];
   let userUpvotedIds = new Set<string>();
+  let userInterestedIds = new Set<string>();
   if (user && allDisplayedIds.length > 0) {
     const { data: upvotes } = await supabase
       .from('upvotes')
@@ -59,6 +69,18 @@ export default async function HomePage() {
       .in('app_id', allDisplayedIds);
     if (upvotes) {
       userUpvotedIds = new Set(upvotes.map((u) => u.app_id));
+    }
+
+    const comingSoonIds = (comingSoonApps || []).map((a) => a.id);
+    if (comingSoonIds.length > 0) {
+      const { data: interests } = await supabase
+        .from('app_interests')
+        .select('app_id')
+        .eq('user_id', user.id)
+        .in('app_id', comingSoonIds);
+      if (interests) {
+        userInterestedIds = new Set(interests.map((i) => i.app_id));
+      }
     }
   }
 
@@ -165,7 +187,20 @@ export default async function HomePage() {
             <h2 className="text-[13px] font-medium tracking-wide text-muted uppercase">Featured</h2>
             <p className="mt-1 text-[15px] text-foreground">Hand-picked by our team</p>
             <div className="mt-8">
-              <AppGrid apps={featuredApps} userId={user?.id} userUpvotedIds={userUpvotedIds} />
+              <AppGrid apps={featuredApps} userId={user?.id} userUpvotedIds={userUpvotedIds} userInterestedIds={userInterestedIds} />
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Coming Soon */}
+      {comingSoonApps && comingSoonApps.length > 0 && (
+        <section className="border-t bg-white">
+          <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-16">
+            <h2 className="text-[13px] font-medium tracking-wide text-muted uppercase">Coming Soon</h2>
+            <p className="mt-1 text-[15px] text-foreground">Upcoming voice-native apps — express your interest</p>
+            <div className="mt-8">
+              <AppGrid apps={comingSoonApps} userId={user?.id} userUpvotedIds={userUpvotedIds} userInterestedIds={userInterestedIds} />
             </div>
           </div>
         </section>
@@ -184,7 +219,7 @@ export default async function HomePage() {
             </Link>
           </div>
           <div className="mt-8">
-            <AppGrid apps={latestApps || []} emptyMessage="No apps listed yet. Be the first to submit one." userId={user?.id} userUpvotedIds={userUpvotedIds} />
+            <AppGrid apps={latestApps || []} emptyMessage="No apps listed yet. Be the first to submit one." userId={user?.id} userUpvotedIds={userUpvotedIds} userInterestedIds={userInterestedIds} />
           </div>
         </div>
       </section>

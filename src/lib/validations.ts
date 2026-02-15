@@ -22,6 +22,8 @@ export const submitAppSchema = z.object({
   demo_video_url: httpUrl().optional().or(z.literal('')),
   pricing_model: z.enum(['free', 'freemium', 'paid', 'subscription']),
   pricing_details: z.string().max(100).optional().or(z.literal('')),
+  is_coming_soon: z.boolean().default(false),
+  expected_launch_date: z.string().optional().or(z.literal('')),
   tags: z.array(
     z.string()
       .min(2, 'Tag must be at least 2 characters')

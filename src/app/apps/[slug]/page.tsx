@@ -7,6 +7,7 @@ import PlatformBadges from '@/components/apps/PlatformBadges';
 import PricingBadge from '@/components/apps/PricingBadge';
 import ScreenshotCarousel from '@/components/apps/ScreenshotCarousel';
 import UpvoteButton from '@/components/ui/UpvoteButton';
+import InterestButton from '@/components/ui/InterestButton';
 import ReportDialog from '@/components/ui/ReportDialog';
 import { formatDate } from '@/lib/utils';
 import { PLATFORMS, PRICING_MODELS } from '@/lib/constants';
@@ -94,9 +95,10 @@ export default async function AppDetailPage({
     .select('tag_id, tags(name, slug)')
     .eq('app_id', app.id);
 
-  // Get current user and upvote status
+  // Get current user and upvote/interest status
   const { data: { user } } = await supabase.auth.getUser();
   let hasUpvoted = false;
+  let hasInterested = false;
   if (user) {
     const { data: upvote } = await supabase
       .from('upvotes')
@@ -105,6 +107,16 @@ export default async function AppDetailPage({
       .eq('app_id', app.id)
       .maybeSingle();
     hasUpvoted = !!upvote;
+
+    if (app.is_coming_soon) {
+      const { data: interest } = await supabase
+        .from('app_interests')
+        .select('user_id')
+        .eq('user_id', user.id)
+        .eq('app_id', app.id)
+        .maybeSingle();
+      hasInterested = !!interest;
+    }
   }
 
   // Increment view count (best-effort, non-blocking)
@@ -173,7 +185,12 @@ export default async function AppDetailPage({
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-2">
                 <h1 className="text-2xl font-bold text-gray-900">{app.name}</h1>
-                {app.featured && (
+                {app.is_coming_soon && (
+                  <span className="rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-700">
+                    Coming Soon
+                  </span>
+                )}
+                {app.featured && !app.is_coming_soon && (
                   <span className="rounded-full bg-indigo-100 px-2.5 py-0.5 text-xs font-medium text-indigo-700">
                     Featured
                   </span>
@@ -201,11 +218,28 @@ export default async function AppDetailPage({
           <div className="mt-6 rounded-lg bg-gray-50 p-4 text-sm leading-relaxed text-gray-600">
             <strong>{app.name}</strong> is a {pricingLabel.toLowerCase()} voice-native application
             {app.category ? ` in ${app.category.name}` : ''}.
-            Available on {platformLabels.join(', ')}.
+            {app.is_coming_soon ? (
+              <> This app is coming soon{app.expected_launch_date ? `, with an expected launch date of ${formatDate(app.expected_launch_date)}` : ''}. </>
+            ) : (
+              <> Available on {platformLabels.join(', ')}. </>
+            )}
             {app.voice_features && app.voice_features.length > 0 && (
               <> Key voice features include {app.voice_features.join(', ')}.</>
             )}
           </div>
+
+          {/* Expected launch date */}
+          {app.is_coming_soon && app.expected_launch_date && (
+            <div className="mt-4 flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-700">
+              <svg className="h-4 w-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                <line x1="16" y1="2" x2="16" y2="6" />
+                <line x1="8" y1="2" x2="8" y2="6" />
+                <line x1="3" y1="10" x2="21" y2="10" />
+              </svg>
+              Expected launch: {formatDate(app.expected_launch_date)}
+            </div>
+          )}
 
           {/* Screenshots */}
           {app.screenshot_urls && app.screenshot_urls.length > 0 && (
@@ -294,57 +328,77 @@ export default async function AppDetailPage({
         <div className="space-y-6">
           {/* Actions */}
           <div className="rounded-xl border border-gray-200 bg-white p-5">
-            <div className="space-y-3">
-              {/* Website */}
-              <a
-                href={app.website_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-indigo-700"
-              >
-                <Globe className="h-4 w-4" />
-                Visit Website
-              </a>
-
-              {/* App Store */}
-              {app.app_store_url && (
+            {app.is_coming_soon ? (
+              <div className="space-y-3">
+                <InterestButton
+                  appId={app.id}
+                  initialCount={app.interest_count}
+                  initialInterested={hasInterested}
+                  userId={user?.id || null}
+                />
                 <a
-                  href={app.app_store_url}
+                  href={app.website_url}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex w-full items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
                 >
-                  <Apple className="h-4 w-4" />
-                  App Store
+                  <Globe className="h-4 w-4" />
+                  Visit Website
                 </a>
-              )}
-
-              {/* Play Store */}
-              {app.play_store_url && (
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {/* Website */}
                 <a
-                  href={app.play_store_url}
+                  href={app.website_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex w-full items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
+                  className="flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-indigo-700"
                 >
-                  <Smartphone className="h-4 w-4" />
-                  Google Play
+                  <Globe className="h-4 w-4" />
+                  Visit Website
                 </a>
-              )}
 
-              {/* Other download */}
-              {app.other_download_url && (
-                <a
-                  href={app.other_download_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex w-full items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
-                >
-                  <Download className="h-4 w-4" />
-                  Download
-                </a>
-              )}
-            </div>
+                {/* App Store */}
+                {app.app_store_url && (
+                  <a
+                    href={app.app_store_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex w-full items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
+                  >
+                    <Apple className="h-4 w-4" />
+                    App Store
+                  </a>
+                )}
+
+                {/* Play Store */}
+                {app.play_store_url && (
+                  <a
+                    href={app.play_store_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex w-full items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
+                  >
+                    <Smartphone className="h-4 w-4" />
+                    Google Play
+                  </a>
+                )}
+
+                {/* Other download */}
+                {app.other_download_url && (
+                  <a
+                    href={app.other_download_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex w-full items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
+                  >
+                    <Download className="h-4 w-4" />
+                    Download
+                  </a>
+                )}
+              </div>
+            )}
 
             {/* Pricing */}
             {app.pricing_details && (
@@ -367,6 +421,12 @@ export default async function AppDetailPage({
           <div className="rounded-xl border border-gray-200 bg-white p-5">
             <h3 className="text-sm font-semibold text-gray-900">Stats</h3>
             <dl className="mt-3 space-y-2 text-sm">
+              {app.is_coming_soon && (
+                <div className="flex justify-between">
+                  <dt className="text-gray-500">Interested</dt>
+                  <dd className="font-medium text-blue-600">{app.interest_count}</dd>
+                </div>
+              )}
               <div className="flex justify-between">
                 <dt className="text-gray-500">Upvotes</dt>
                 <dd className="font-medium text-gray-900">{app.upvote_count}</dd>

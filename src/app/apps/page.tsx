@@ -104,17 +104,31 @@ export default async function BrowseAppsPage({
   const { data: apps, count } = await query;
   const totalPages = Math.ceil((count || 0) / perPage);
 
-  // Get current user + their upvotes for displayed apps
+  // Get current user + their upvotes/interests for displayed apps
   const { data: { user } } = await supabase.auth.getUser();
   let userUpvotedIds = new Set<string>();
+  let userInterestedIds = new Set<string>();
   if (user && apps && apps.length > 0) {
+    const appIds = apps.map((a) => a.id);
     const { data: upvotes } = await supabase
       .from('upvotes')
       .select('app_id')
       .eq('user_id', user.id)
-      .in('app_id', apps.map((a) => a.id));
+      .in('app_id', appIds);
     if (upvotes) {
       userUpvotedIds = new Set(upvotes.map((u) => u.app_id));
+    }
+
+    const comingSoonIds = apps.filter((a) => a.is_coming_soon).map((a) => a.id);
+    if (comingSoonIds.length > 0) {
+      const { data: interests } = await supabase
+        .from('app_interests')
+        .select('app_id')
+        .eq('user_id', user.id)
+        .in('app_id', comingSoonIds);
+      if (interests) {
+        userInterestedIds = new Set(interests.map((i) => i.app_id));
+      }
     }
   }
 
@@ -167,7 +181,7 @@ export default async function BrowseAppsPage({
             </Suspense>
           </div>
 
-          <AppGrid apps={apps || []} emptyMessage="No apps match your search." userId={user?.id} userUpvotedIds={userUpvotedIds} />
+          <AppGrid apps={apps || []} emptyMessage="No apps match your search." userId={user?.id} userUpvotedIds={userUpvotedIds} userInterestedIds={userInterestedIds} />
 
           {/* Pagination */}
           {totalPages > 1 && (

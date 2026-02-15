@@ -3,8 +3,9 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { createClient } from '@/lib/supabase/server';
 import StatusBadge from '@/components/ui/StatusBadge';
+import LaunchButton from '@/components/ui/LaunchButton';
 import { formatDate } from '@/lib/utils';
-import { Plus, Edit, ExternalLink } from 'lucide-react';
+import { Plus, Edit, ExternalLink, Bell } from 'lucide-react';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -33,6 +34,7 @@ export default async function DashboardPage() {
   const pendingCount = apps?.filter((a) => a.status === 'pending').length || 0;
   const approvedCount = apps?.filter((a) => a.status === 'approved').length || 0;
   const rejectedCount = apps?.filter((a) => a.status === 'rejected').length || 0;
+  const totalInterestCount = apps?.filter((a) => a.is_coming_soon).reduce((sum, a) => sum + (a.interest_count || 0), 0) || 0;
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
@@ -54,7 +56,7 @@ export default async function DashboardPage() {
       </div>
 
       {/* Stats */}
-      <div className="mt-8 grid grid-cols-3 gap-2 sm:gap-4">
+      <div className="mt-8 grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-4">
         <div className="rounded-xl border border-gray-200 bg-white p-3 sm:p-5">
           <div className="text-xl font-bold text-yellow-600 sm:text-2xl">{pendingCount}</div>
           <div className="mt-1 text-xs text-gray-500 sm:text-sm">Pending</div>
@@ -66,6 +68,13 @@ export default async function DashboardPage() {
         <div className="rounded-xl border border-gray-200 bg-white p-3 sm:p-5">
           <div className="text-xl font-bold text-red-600 sm:text-2xl">{rejectedCount}</div>
           <div className="mt-1 text-xs text-gray-500 sm:text-sm">Rejected</div>
+        </div>
+        <div className="rounded-xl border border-gray-200 bg-white p-3 sm:p-5">
+          <div className="flex items-center gap-1.5">
+            <Bell className="h-4 w-4 text-blue-600 sm:h-5 sm:w-5" />
+            <span className="text-xl font-bold text-blue-600 sm:text-2xl">{totalInterestCount}</span>
+          </div>
+          <div className="mt-1 text-xs text-gray-500 sm:text-sm">Interested</div>
         </div>
       </div>
 
@@ -113,16 +122,29 @@ export default async function DashboardPage() {
                   <div className="flex items-center gap-2">
                     <h3 className="truncate font-semibold text-gray-900">{app.name}</h3>
                     <StatusBadge status={app.status} />
+                    {app.is_coming_soon && app.status === 'approved' && (
+                      <span className="rounded bg-blue-100 px-1.5 py-0.5 text-[10px] font-semibold text-blue-700">
+                        COMING SOON
+                      </span>
+                    )}
                   </div>
                   <p className="mt-0.5 truncate text-sm text-gray-500">{app.tagline}</p>
-                  <p className="mt-1 text-xs text-gray-400">
-                    {app.category?.icon} {app.category?.name} &middot; Submitted{' '}
-                    {formatDate(app.created_at)}
-                  </p>
+                  <div className="mt-1 flex items-center gap-2 text-xs text-gray-400">
+                    <span>{app.category?.icon} {app.category?.name} &middot; Submitted{' '}{formatDate(app.created_at)}</span>
+                    {app.is_coming_soon && app.status === 'approved' && (
+                      <span className="flex items-center gap-1 text-blue-600">
+                        <Bell className="h-3 w-3" />
+                        {app.interest_count} interested
+                      </span>
+                    )}
+                  </div>
                 </div>
 
                 {/* Actions */}
                 <div className="flex gap-2">
+                  {app.is_coming_soon && app.status === 'approved' && (
+                    <LaunchButton appId={app.id} />
+                  )}
                   {app.status === 'approved' && (
                     <Link
                       href={`/apps/${app.slug}`}

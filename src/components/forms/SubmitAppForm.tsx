@@ -35,6 +35,8 @@ export default function SubmitAppForm({ categories, userId, editApp }: SubmitApp
   const [demoVideoUrl, setDemoVideoUrl] = useState(editApp?.demo_video_url || '');
   const [pricingModel, setPricingModel] = useState(editApp?.pricing_model || 'free');
   const [pricingDetails, setPricingDetails] = useState(editApp?.pricing_details || '');
+  const [isComingSoon, setIsComingSoon] = useState(editApp?.is_coming_soon || false);
+  const [expectedLaunchDate, setExpectedLaunchDate] = useState(editApp?.expected_launch_date || '');
   const [tags, setTags] = useState<string[]>([]);
   const [logoUrl, setLogoUrl] = useState(editApp?.logo_url || '');
   const [screenshotUrls, setScreenshotUrls] = useState<string[]>(editApp?.screenshot_urls || []);
@@ -69,6 +71,8 @@ export default function SubmitAppForm({ categories, userId, editApp }: SubmitApp
       demo_video_url: demoVideoUrl,
       pricing_model: pricingModel,
       pricing_details: pricingDetails,
+      is_coming_soon: isComingSoon,
+      expected_launch_date: expectedLaunchDate,
       tags,
       website2, // honeypot
       logo_url: logoUrl,
@@ -385,6 +389,48 @@ export default function SubmitAppForm({ categories, userId, editApp }: SubmitApp
               maxLength={100}
               className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
               placeholder="e.g. $9.99/month, Free tier available"
+            />
+          </div>
+        )}
+      </div>
+
+      {/* Section: Coming Soon */}
+      <div className="rounded-xl border border-gray-200 bg-white p-6">
+        <h2 className="text-lg font-semibold text-gray-900">Launch Status</h2>
+        <p className="mt-1 text-sm text-gray-500">Is your app available now, or coming soon?</p>
+
+        <div className="mt-4">
+          <label className="flex cursor-pointer items-center gap-3">
+            <button
+              type="button"
+              role="switch"
+              aria-checked={isComingSoon}
+              onClick={() => setIsComingSoon(!isComingSoon)}
+              className={`relative inline-flex h-6 w-11 flex-shrink-0 rounded-full border-2 border-transparent transition-colors ${
+                isComingSoon ? 'bg-indigo-600' : 'bg-gray-200'
+              }`}
+            >
+              <span
+                className={`inline-block h-5 w-5 rounded-full bg-white shadow transition-transform ${
+                  isComingSoon ? 'translate-x-5' : 'translate-x-0'
+                }`}
+              />
+            </button>
+            <span className="text-sm font-medium text-gray-700">This app is coming soon</span>
+          </label>
+        </div>
+
+        {isComingSoon && (
+          <div className="mt-4">
+            <label htmlFor="expected_launch_date" className="block text-sm font-medium text-gray-700">
+              Expected Launch Date <span className="text-xs text-gray-400">(optional)</span>
+            </label>
+            <input
+              id="expected_launch_date"
+              type="date"
+              value={expectedLaunchDate}
+              onChange={(e) => setExpectedLaunchDate(e.target.value)}
+              className="mt-1 block w-full max-w-xs rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
             />
           </div>
         )}

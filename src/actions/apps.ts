@@ -125,6 +125,8 @@ export async function submitApp(data: Record<string, unknown>) {
     demo_video_url: cleanUrl(input.demo_video_url),
     pricing_model: input.pricing_model,
     pricing_details: input.pricing_details?.trim() || null,
+    is_coming_soon: input.is_coming_soon || false,
+    expected_launch_date: input.is_coming_soon && input.expected_launch_date ? input.expected_launch_date : null,
     logo_url: logoUrl,
     screenshot_urls: screenshotUrls,
     status: 'pending',
@@ -218,6 +220,8 @@ export async function updateApp(appId: string, data: Record<string, unknown>) {
       demo_video_url: cleanUrl(input.demo_video_url),
       pricing_model: input.pricing_model,
       pricing_details: input.pricing_details?.trim() || null,
+      is_coming_soon: input.is_coming_soon || false,
+      expected_launch_date: input.is_coming_soon && input.expected_launch_date ? input.expected_launch_date : null,
       logo_url: logoUrl,
       screenshot_urls: screenshotUrls,
       status: 'pending',
@@ -271,5 +275,85 @@ export async function toggleUpvote(appId: string) {
   }
 
   revalidatePath(`/apps`);
+  return { success: true };
+}
+
+
+
+export async function toggleInterest(appId: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: 'You must be signed in.' };
+  }
+
+  // Rate limit: 30 interest toggles per minute per user
+  const rl = await rateLimit(supabase, `interest:${user.id}`, { maxRequests: 30, windowSeconds: 60 });
+  if (!rl.success) {
+    return { error: 'Too many requests. Please slow down.' };
+  }
+
+  // Check if already interested
+  const { data: existing } = await supabase
+    .from('app_interests')
+    .select('user_id')
+    .eq('user_id', user.id)
+    .eq('app_id', appId)
+    .maybeSingle();
+
+  if (existing) {
+    const { error } = await supabase
+      .from('app_interests')
+      .delete()
+      .eq('user_id', user.id)
+      .eq('app_id', appId);
+
+    if (error) return { error: 'Failed to remove interest.' };
+  } else {
+    const { error } = await supabase
+      .from('app_interests')
+      .insert({ user_id: user.id, app_id: appId });
+
+    if (error) return { error: 'Failed to express interest.' };
+  }
+
+  revalidatePath(`/apps`);
+  return { success: true };
+}
+
+export async function launchApp(appId: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: 'You must be signed in.' };
+  }
+
+  // Check ownership
+  const { data: app } = await supabase
+    .from('apps')
+    .select('id, submitted_by, is_coming_soon')
+    .eq('id', appId)
+    .maybeSingle();
+
+  if (!app || app.submitted_by !== user.id) {
+    return { error: 'App not found or you do not have permission.' };
+  }
+
+  if (!app.is_coming_soon) {
+    return { error: 'This app is not marked as coming soon.' };
+  }
+
+  const { error } = await supabase
+    .from('apps')
+    .update({ is_coming_soon: false })
+    .eq('id', appId);
+
+  if (error) return { error: 'Failed to launch app.' };
+
+  revalidatePath('/dashboard');
+  revalidatePath('/apps');
+  revalidatePath('/');
   return { success: true };
 }
