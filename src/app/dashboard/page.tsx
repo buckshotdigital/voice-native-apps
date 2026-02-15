@@ -8,7 +8,8 @@ import { Plus, Edit, ExternalLink } from 'lucide-react';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Dashboard - VoiceNative Directory',
+  title: 'Dashboard',
+  robots: { index: false, follow: false },
 };
 
 export default async function DashboardPage() {

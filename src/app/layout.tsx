@@ -14,15 +14,61 @@ const geistMono = Geist_Mono({
   subsets: ['latin'],
 });
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://voicenativeapps.com';
+
 export const metadata: Metadata = {
-  title: 'VoiceNative Directory - Discover Voice-First Applications',
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: 'VoiceNative Directory - Discover Voice-First Applications',
+    template: '%s | VoiceNative Directory',
+  },
   description:
     'The curated directory for voice-native applications. Browse, search, and discover apps that put voice interaction first.',
+  keywords: [
+    'voice apps',
+    'voice-native',
+    'voice-first',
+    'voice assistant apps',
+    'voice control',
+    'speech recognition apps',
+    'voice UI',
+    'conversational AI',
+    'voice technology',
+    'app directory',
+  ],
+  authors: [{ name: 'VoiceNative Directory' }],
+  creator: 'VoiceNative Directory',
+  publisher: 'VoiceNative Directory',
   openGraph: {
-    title: 'VoiceNative Directory',
-    description: 'Discover voice-first applications',
     type: 'website',
+    locale: 'en_US',
+    siteName: 'VoiceNative Directory',
+    title: 'VoiceNative Directory - Discover Voice-First Applications',
+    description:
+      'The curated directory for voice-native applications. Browse, search, and discover apps that put voice interaction first.',
+    images: [{ url: '/og-default.png', width: 1200, height: 630, alt: 'VoiceNative Directory' }],
   },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'VoiceNative Directory - Discover Voice-First Applications',
+    description:
+      'The curated directory for voice-native applications. Browse, search, and discover apps that put voice interaction first.',
+    images: ['/og-default.png'],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    'max-image-preview': 'large' as const,
+    'max-snippet': -1,
+  },
+  icons: {
+    icon: [
+      { url: '/favicon.ico', sizes: '48x48' },
+      { url: '/icon.svg', type: 'image/svg+xml' },
+    ],
+    apple: '/apple-touch-icon.png',
+  },
+  manifest: '/manifest.webmanifest',
 };
 
 export default function RootLayout({

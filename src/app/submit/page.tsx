@@ -4,8 +4,9 @@ import SubmitAppForm from '@/components/forms/SubmitAppForm';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Submit an App - VoiceNative Directory',
+  title: 'Submit an App',
   description: 'Submit your voice-native application to the directory.',
+  robots: { index: false, follow: false },
 };
 
 export default async function SubmitPage() {

@@ -9,6 +9,11 @@ import ScreenshotCarousel from '@/components/apps/ScreenshotCarousel';
 import UpvoteButton from '@/components/ui/UpvoteButton';
 import ReportDialog from '@/components/ui/ReportDialog';
 import { formatDate } from '@/lib/utils';
+import { PLATFORMS, PRICING_MODELS } from '@/lib/constants';
+import {
+  generateSoftwareApplicationSchema,
+  generateBreadcrumbSchema,
+} from '@/lib/structured-data';
 import {
   ExternalLink,
   Globe,
@@ -21,6 +26,8 @@ import {
 } from 'lucide-react';
 import type { Metadata } from 'next';
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://voicenativeapps.com';
+
 export async function generateMetadata({
   params,
 }: {
@@ -30,19 +37,35 @@ export async function generateMetadata({
   const supabase = await createClient();
   const { data: app } = await supabase
     .from('apps')
-    .select('name, tagline, logo_url')
+    .select('name, tagline, logo_url, platforms, voice_features, pricing_model')
     .eq('slug', slug)
     .eq('status', 'approved')
     .single();
 
   if (!app) return { title: 'App Not Found' };
 
+  const platformLabels = (app.platforms || [])
+    .map((p: string) => PLATFORMS.find((pl) => pl.value === p)?.label)
+    .filter(Boolean);
+  const pricingLabel =
+    PRICING_MODELS.find((m) => m.value === app.pricing_model)?.label || app.pricing_model;
+
+  const description = `${app.tagline} Available on ${platformLabels.join(', ')}. ${pricingLabel} voice-native app with ${(app.voice_features || []).slice(0, 3).join(', ')}.`;
+
   return {
-    title: `${app.name} - VoiceNative Directory`,
-    description: app.tagline,
+    title: app.name,
+    description,
+    keywords: [app.name, 'voice app', ...(app.voice_features || [])],
+    alternates: { canonical: `/apps/${slug}` },
     openGraph: {
       title: app.name,
-      description: app.tagline,
+      description,
+      images: app.logo_url ? [app.logo_url] : [],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: app.name,
+      description,
       images: app.logo_url ? [app.logo_url] : [],
     },
   };
@@ -88,8 +111,35 @@ export default async function AppDetailPage({
   // Use optimistic locking to avoid race conditions
   supabase.from('apps').update({ view_count: (app.view_count || 0) + 1 }).eq('id', app.id).eq('view_count', app.view_count).then(() => {});
 
+  // Build GEO fact-summary data
+  const platformLabels = app.platforms
+    .map((p: string) => PLATFORMS.find((pl) => pl.value === p)?.label)
+    .filter(Boolean);
+  const pricingLabel =
+    PRICING_MODELS.find((m) => m.value === app.pricing_model)?.label || app.pricing_model;
+
   return (
     <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
+      {/* JSON-LD */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(generateSoftwareApplicationSchema(app)),
+        }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(
+            generateBreadcrumbSchema([
+              { name: 'Home', url: SITE_URL },
+              { name: 'Directory', url: `${SITE_URL}/apps` },
+              { name: app.name, url: `${SITE_URL}/apps/${app.slug}` },
+            ]),
+          ),
+        }}
+      />
+
       {/* Back link */}
       <Link
         href="/apps"
@@ -134,7 +184,7 @@ export default async function AppDetailPage({
                 <PricingBadge model={app.pricing_model} />
                 {app.category && (
                   <Link
-                    href={`/apps?category=${app.category.slug}`}
+                    href={`/categories/${app.category.slug}`}
                     className="text-xs text-gray-400 hover:text-indigo-600"
                   >
                     {app.category.name}
@@ -145,6 +195,16 @@ export default async function AppDetailPage({
                 </span>
               </div>
             </div>
+          </div>
+
+          {/* GEO: Fact-rich summary for AI extraction */}
+          <div className="mt-6 rounded-lg bg-gray-50 p-4 text-sm leading-relaxed text-gray-600">
+            <strong>{app.name}</strong> is a {pricingLabel.toLowerCase()} voice-native application
+            {app.category ? ` in ${app.category.name}` : ''}.
+            Available on {platformLabels.join(', ')}.
+            {app.voice_features && app.voice_features.length > 0 && (
+              <> Key voice features include {app.voice_features.join(', ')}.</>
+            )}
           </div>
 
           {/* Screenshots */}

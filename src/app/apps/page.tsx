@@ -5,23 +5,54 @@ import SearchBar from '@/components/search/SearchBar';
 import FilterPanel from '@/components/search/FilterPanel';
 import SortDropdown from '@/components/search/SortDropdown';
 import type { Metadata } from 'next';
+import {
+  generateCollectionPageSchema,
+  generateBreadcrumbSchema,
+} from '@/lib/structured-data';
 
-export const metadata: Metadata = {
-  title: 'Directory - VoiceNative',
-  description: 'Search and filter voice-native applications.',
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://voicenativeapps.com';
+
+type SearchParams = {
+  q?: string;
+  category?: string;
+  platform?: string;
+  pricing?: string;
+  sort?: string;
+  page?: string;
 };
+
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<SearchParams>;
+}): Promise<Metadata> {
+  const params = await searchParams;
+  const hasFilters = params.q || params.category || params.platform || params.pricing;
+
+  const parts: string[] = [];
+  if (params.q) parts.push(`"${params.q}"`);
+  if (params.category) parts.push(params.category);
+  if (params.platform) parts.push(params.platform);
+  if (params.pricing) parts.push(params.pricing);
+
+  const description = hasFilters
+    ? `Browse voice-native apps filtered by ${parts.join(', ')}.`
+    : 'Search and filter voice-native applications across categories, platforms, and pricing models.';
+
+  return {
+    title: 'Directory',
+    description,
+    alternates: { canonical: '/apps' },
+    ...(hasFilters || (params.page && parseInt(params.page) > 1)
+      ? { robots: { index: false, follow: true } }
+      : {}),
+  };
+}
 
 export default async function BrowseAppsPage({
   searchParams,
 }: {
-  searchParams: Promise<{
-    q?: string;
-    category?: string;
-    platform?: string;
-    pricing?: string;
-    sort?: string;
-    page?: string;
-  }>;
+  searchParams: Promise<SearchParams>;
 }) {
   const params = await searchParams;
   const supabase = await createClient();
@@ -89,6 +120,25 @@ export default async function BrowseAppsPage({
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
+      {/* JSON-LD */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(generateCollectionPageSchema(count || 0)),
+        }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(
+            generateBreadcrumbSchema([
+              { name: 'Home', url: SITE_URL },
+              { name: 'Directory', url: `${SITE_URL}/apps` },
+            ]),
+          ),
+        }}
+      />
+
       <div className="mb-8">
         <h1 className="text-2xl font-bold tracking-tight text-foreground">Directory</h1>
         <p className="mt-1 text-[14px] text-muted">

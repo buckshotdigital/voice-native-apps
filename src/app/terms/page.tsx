@@ -1,7 +1,9 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Terms of Service - VoiceNative',
+  title: 'Terms of Service',
+  description: 'Terms of Service for VoiceNative Directory. Read our terms governing the use of the voice-native app directory.',
+  alternates: { canonical: '/terms' },
 };
 
 export default function TermsPage() {
