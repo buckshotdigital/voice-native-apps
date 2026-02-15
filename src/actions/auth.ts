@@ -73,7 +73,9 @@ export async function signIn(formData: FormData) {
   const redirectTo = formData.get('redirect') as string;
   // Validate redirect is an internal path to prevent open redirect attacks
   const safePath = redirectTo && redirectTo.startsWith('/') && !redirectTo.startsWith('//') ? redirectTo : '/dashboard';
-  redirect(safePath);
+  // Return redirect URL instead of calling redirect() so the client can do
+  // a full page navigation, ensuring the Header component picks up the new session.
+  return { redirect: safePath };
 }
 
 export async function signInWithOAuth(provider: 'google' | 'github') {
@@ -103,5 +105,5 @@ export async function signInWithOAuth(provider: 'google' | 'github') {
 export async function signOut() {
   const supabase = await createClient();
   await supabase.auth.signOut();
-  redirect('/');
+  return { redirect: '/' };
 }

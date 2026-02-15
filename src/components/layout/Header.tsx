@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
+import { signOut } from '@/actions/auth';
 import { LogOut, LayoutDashboard, Shield, ChevronDown } from 'lucide-react';
 import type { Profile } from '@/types';
 import { getInitials } from '@/lib/utils';
@@ -17,22 +18,22 @@ export default function Header() {
 
   useEffect(() => {
     const supabase = supabaseRef.current;
-    async function getUser() {
-      const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
-      if (user) {
+    async function loadSession() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        setUser(session.user);
         const { data } = await supabase
           .from('profiles')
           .select('*')
-          .eq('id', user.id)
+          .eq('id', session.user.id)
           .single();
         setProfile(data);
       }
     }
-    getUser();
+    loadSession();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'SIGNED_IN' && session?.user) {
+      if (session?.user) {
         setUser(session.user);
         const { data } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
         setProfile(data);
@@ -56,12 +57,11 @@ export default function Header() {
   }, []);
 
   async function handleSignOut() {
-    await supabaseRef.current.auth.signOut();
-    setUser(null);
-    setProfile(null);
     setMenuOpen(false);
-    // Full reload clears server-side session cookies; router.push alone leaves stale middleware state
-    window.location.href = '/';
+    const result = await signOut();
+    if (result?.redirect) {
+      window.location.href = result.redirect;
+    }
   }
 
   return (

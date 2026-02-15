@@ -34,7 +34,11 @@ export default function AuthForm({
 
     const result = mode === 'login' ? await signIn(formData) : await signUp(formData);
 
-    if (result && 'error' in result && result.error) {
+    if (result && 'redirect' in result && result.redirect) {
+      // Full page navigation so Header remounts with fresh session cookies
+      window.location.href = result.redirect as string;
+      return;
+    } else if (result && 'error' in result && result.error) {
       setError(result.error as string);
     } else if (result && 'success' in result && result.success) {
       setSuccess(result.success as string);
