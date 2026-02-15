@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import Link from 'next/link';
 import { truncate } from '@/lib/utils';
 import type { App } from '@/types';
@@ -16,11 +17,12 @@ export default function AppCard({ app, userId, userUpvoted }: { app: App; userId
       <div className="flex items-start gap-2.5 sm:gap-3.5">
         <div className="relative h-10 w-10 flex-shrink-0 overflow-hidden rounded-[10px] bg-surface sm:h-11 sm:w-11">
           {app.logo_url ? (
-            <img
+            <Image
               src={app.logo_url}
               alt={app.name}
               className="h-full w-full object-cover"
-              loading="lazy"
+              fill
+              sizes="44px"
             />
           ) : (
             <div className="flex h-full w-full items-center justify-center text-sm font-semibold text-muted">

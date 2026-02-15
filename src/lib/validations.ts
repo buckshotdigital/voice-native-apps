@@ -22,7 +22,12 @@ export const submitAppSchema = z.object({
   demo_video_url: httpUrl().optional().or(z.literal('')),
   pricing_model: z.enum(['free', 'freemium', 'paid', 'subscription']),
   pricing_details: z.string().max(100).optional().or(z.literal('')),
-  tags: z.array(z.string()).max(10, 'Maximum 10 tags'),
+  tags: z.array(
+    z.string()
+      .min(2, 'Tag must be at least 2 characters')
+      .max(30, 'Tag must be under 30 characters')
+      .regex(/^[a-zA-Z0-9\s\-]+$/, 'Tags can only contain letters, numbers, spaces, and hyphens')
+  ).max(10, 'Maximum 10 tags'),
   // honeypot
   website2: z.string().optional(),
 });

@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import PlatformBadges from '@/components/apps/PlatformBadges';
@@ -105,11 +106,13 @@ export default async function AppDetailPage({
           <div className="flex items-start gap-3 sm:gap-5">
             <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-2xl bg-gray-100 sm:h-20 sm:w-20">
               {app.logo_url ? (
-                <img
+                <Image
                   src={app.logo_url}
                   alt={`${app.name} logo`}
                   className="h-full w-full object-cover"
-                  loading="lazy"
+                  fill
+                  sizes="80px"
+                  priority
                 />
               ) : (
                 <div className="flex h-full w-full items-center justify-center text-2xl font-bold text-gray-400">

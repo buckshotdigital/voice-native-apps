@@ -58,9 +58,9 @@ const nextConfig: NextConfig = {
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+              "script-src 'self' 'unsafe-inline'",
               "style-src 'self' 'unsafe-inline'",
-              "img-src 'self' https://*.supabase.co https://www.google.com https://*.gstatic.com data:",
+              "img-src 'self' https://*.supabase.co https://www.google.com https://*.gstatic.com",
               "font-src 'self'",
               "connect-src 'self' https://*.supabase.co",
               "frame-ancestors 'none'",

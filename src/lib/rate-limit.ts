@@ -1,8 +1,8 @@
 /**
  * Database-backed rate limiter using Supabase RPC.
  * Works across all serverless instances (unlike in-memory Map).
- * Falls back to allowing the request if the DB call fails,
- * to avoid blocking legitimate users on transient errors.
+ * Fails closed — blocks the request if the DB call fails,
+ * to prevent abuse during outages.
  */
 
 import type { SupabaseClient } from '@supabase/supabase-js';
@@ -21,12 +21,12 @@ export async function rateLimit(
 
     if (error) {
       console.error('Rate limit check failed:', error.message);
-      return { success: true }; // fail-open on DB errors
+      return { success: false }; // fail-closed on DB errors
     }
 
     return { success: !!allowed };
   } catch (e) {
     console.error('Rate limit error:', e);
-    return { success: true }; // fail-open
+    return { success: false }; // fail-closed
   }
 }
