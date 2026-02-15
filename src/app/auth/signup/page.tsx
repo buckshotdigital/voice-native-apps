@@ -2,6 +2,7 @@ import AuthForm from '@/components/auth/AuthForm';
 
 export const metadata = {
   title: 'Create Account - VoiceNative',
+  robots: { index: false, follow: false },
 };
 
 export default function SignUpPage() {

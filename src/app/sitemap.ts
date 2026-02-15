@@ -1,7 +1,7 @@
 import type { MetadataRoute } from 'next';
 import { createAdminClient } from '@/lib/supabase/admin';
 
-const BASE_URL = 'https://voice-native-apps.vercel.app';
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://voice-native-apps.vercel.app';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const supabase = createAdminClient();
