@@ -3,6 +3,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { createClient } from '@/lib/supabase/server';
 import StatusBadge from '@/components/ui/StatusBadge';
+import AdminAppTable from './AdminAppTable';
 import { formatDate } from '@/lib/utils';
 import { Eye, Clock, CheckCircle, Flag, AlertTriangle } from 'lucide-react';
 import type { Metadata } from 'next';
@@ -54,6 +55,14 @@ export default async function AdminPage() {
     .from('apps')
     .select('*', { count: 'exact', head: true })
     .eq('status', 'approved');
+
+  // All approved apps for featured management
+  const { data: allApprovedApps } = await supabase
+    .from('apps')
+    .select('id, name, slug, logo_url, featured, upvote_count, view_count, category:categories(name)')
+    .eq('status', 'approved')
+    .order('featured', { ascending: false })
+    .order('name', { ascending: true });
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
@@ -178,6 +187,22 @@ export default async function AdminPage() {
             })}
           </div>
         </div>
+      )}
+
+      {/* All Approved Apps */}
+      {allApprovedApps && allApprovedApps.length > 0 && (
+        <AdminAppTable
+          apps={allApprovedApps.map((app) => ({
+            id: app.id,
+            name: app.name,
+            slug: app.slug,
+            logo_url: app.logo_url,
+            featured: app.featured,
+            upvote_count: app.upvote_count,
+            view_count: app.view_count,
+            categoryName: (app.category as unknown as { name: string } | null)?.name || '—',
+          }))}
+        />
       )}
 
       {/* Recently Reviewed */}
