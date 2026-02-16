@@ -400,12 +400,11 @@ export default function SubmitAppForm({ categories, userId, editApp }: SubmitApp
         <p className="mt-1 text-sm text-gray-500">Is your app available now, or coming soon?</p>
 
         <div className="mt-4">
-          <label className="flex cursor-pointer items-center gap-3">
+          <div className="flex cursor-pointer items-center gap-3" onClick={() => setIsComingSoon(!isComingSoon)}>
             <button
               type="button"
               role="switch"
               aria-checked={isComingSoon}
-              onClick={() => setIsComingSoon(!isComingSoon)}
               className={`relative inline-flex h-6 w-11 flex-shrink-0 rounded-full border-2 border-transparent transition-colors ${
                 isComingSoon ? 'bg-indigo-600' : 'bg-gray-200'
               }`}
@@ -417,7 +416,7 @@ export default function SubmitAppForm({ categories, userId, editApp }: SubmitApp
               />
             </button>
             <span className="text-sm font-medium text-gray-700">This app is coming soon</span>
-          </label>
+          </div>
         </div>
 
         {isComingSoon && (
