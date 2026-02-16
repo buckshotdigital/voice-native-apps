@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { revalidatePath } from 'next/cache';
 
 async function requireAdmin() {
@@ -102,10 +103,12 @@ export async function hideApp(appId: string) {
 }
 
 export async function deleteApp(appId: string) {
-  const { error: authError, supabase } = await requireAdmin();
-  if (authError || !supabase) return { error: authError };
+  const { error: authError } = await requireAdmin();
+  if (authError) return { error: authError };
 
-  const { error } = await supabase
+  // Use admin client to bypass RLS (no DELETE policy on apps table)
+  const adminClient = createAdminClient();
+  const { error } = await adminClient
     .from('apps')
     .delete()
     .eq('id', appId);
