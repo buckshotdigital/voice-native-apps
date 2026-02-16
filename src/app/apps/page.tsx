@@ -68,7 +68,8 @@ export default async function BrowseAppsPage({
     .eq('status', 'approved');
 
   if (params.q) {
-    query = query.textSearch('search_vector', params.q, { type: 'websearch' });
+    const q = `%${params.q}%`;
+    query = query.or(`name.ilike.${q},tagline.ilike.${q}`);
   }
 
   if (params.category) {
