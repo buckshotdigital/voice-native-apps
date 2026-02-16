@@ -8,7 +8,7 @@ export const metadata = {
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ redirect?: string; error?: string }>;
+  searchParams: Promise<{ redirect?: string; error?: string; admin?: string }>;
 }) {
   const params = await searchParams;
 
@@ -20,7 +20,7 @@ export default async function LoginPage({
             {params.error}
           </p>
         )}
-        <AuthForm mode="login" redirectTo={params.redirect} />
+        <AuthForm mode="login" redirectTo={params.redirect} showEmailForm={params.admin === 'true'} />
       </div>
     </div>
   );

@@ -7,9 +7,11 @@ import { Github } from 'lucide-react';
 export default function AuthForm({
   mode,
   redirectTo,
+  showEmailForm = false,
 }: {
   mode: 'login' | 'signup';
   redirectTo?: string;
+  showEmailForm?: boolean;
 }) {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -86,98 +88,66 @@ export default function AuthForm({
         </button>
       </div>
 
-      <div className="relative my-6">
-        <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t" />
-        </div>
-        <div className="relative flex justify-center">
-          <span className="bg-background px-3 text-[12px] text-muted">or</span>
-        </div>
-      </div>
-
-      {/* Email form */}
-      <form action={handleSubmit} className="space-y-3">
-        {mode === 'signup' && (
-          <div>
-            <label htmlFor="display_name" className="block text-[13px] font-medium text-foreground">
-              Name
-            </label>
-            <input
-              id="display_name"
-              name="display_name"
-              type="text"
-              required
-              minLength={2}
-              maxLength={50}
-              className="mt-1.5 block w-full rounded-lg border bg-white px-3 py-2.5 text-[14px] text-foreground placeholder:text-muted/50 focus:border-foreground/20 focus:outline-none focus:ring-2 focus:ring-foreground/5 sm:py-2"
-              placeholder="Your name"
-            />
+      {showEmailForm && (
+        <>
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t" />
+            </div>
+            <div className="relative flex justify-center">
+              <span className="bg-background px-3 text-[12px] text-muted">or</span>
+            </div>
           </div>
-        )}
 
-        <div>
-          <label htmlFor="email" className="block text-[13px] font-medium text-foreground">
-            Email
-          </label>
-          <input
-            id="email"
-            name="email"
-            type="email"
-            required
-            className="mt-1.5 block w-full rounded-lg border bg-white px-3 py-2 text-[14px] text-foreground placeholder:text-muted/50 focus:border-foreground/20 focus:outline-none focus:ring-2 focus:ring-foreground/5"
-            placeholder="you@example.com"
-          />
-        </div>
+          {/* Email form */}
+          <form action={handleSubmit} className="space-y-3">
+            <div>
+              <label htmlFor="email" className="block text-[13px] font-medium text-foreground">
+                Email
+              </label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                required
+                className="mt-1.5 block w-full rounded-lg border bg-white px-3 py-2 text-[14px] text-foreground placeholder:text-muted/50 focus:border-foreground/20 focus:outline-none focus:ring-2 focus:ring-foreground/5"
+                placeholder="you@example.com"
+              />
+            </div>
 
-        <div>
-          <label htmlFor="password" className="block text-[13px] font-medium text-foreground">
-            Password
-          </label>
-          <input
-            id="password"
-            name="password"
-            type="password"
-            required
-            minLength={6}
-            className="mt-1.5 block w-full rounded-lg border bg-white px-3 py-2 text-[14px] text-foreground placeholder:text-muted/50 focus:border-foreground/20 focus:outline-none focus:ring-2 focus:ring-foreground/5"
-            placeholder="Min 6 characters"
-          />
-        </div>
+            <div>
+              <label htmlFor="password" className="block text-[13px] font-medium text-foreground">
+                Password
+              </label>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                required
+                minLength={6}
+                className="mt-1.5 block w-full rounded-lg border bg-white px-3 py-2 text-[14px] text-foreground placeholder:text-muted/50 focus:border-foreground/20 focus:outline-none focus:ring-2 focus:ring-foreground/5"
+                placeholder="Min 6 characters"
+              />
+            </div>
 
-        {error && (
-          <p className="rounded-md bg-red-50 px-3 py-2 text-[13px] text-red-600">{error}</p>
-        )}
+            {error && (
+              <p className="rounded-md bg-red-50 px-3 py-2 text-[13px] text-red-600">{error}</p>
+            )}
 
-        {success && (
-          <p className="rounded-md bg-emerald-50 px-3 py-2 text-[13px] text-emerald-600">{success}</p>
-        )}
+            {success && (
+              <p className="rounded-md bg-emerald-50 px-3 py-2 text-[13px] text-emerald-600">{success}</p>
+            )}
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="mt-1 w-full rounded-lg bg-foreground px-4 py-2.5 text-[14px] font-medium text-white transition-colors hover:bg-foreground/80 disabled:opacity-50"
-        >
-          {loading ? 'Please wait...' : mode === 'login' ? 'Sign in' : 'Create account'}
-        </button>
-      </form>
-
-      <p className="mt-6 text-center text-[13px] text-muted">
-        {mode === 'login' ? (
-          <>
-            No account?{' '}
-            <a href="/auth/signup" className="font-medium text-foreground underline decoration-border underline-offset-4 hover:decoration-foreground">
-              Create one
-            </a>
-          </>
-        ) : (
-          <>
-            Have an account?{' '}
-            <a href="/auth/login" className="font-medium text-foreground underline decoration-border underline-offset-4 hover:decoration-foreground">
-              Sign in
-            </a>
-          </>
-        )}
-      </p>
+            <button
+              type="submit"
+              disabled={loading}
+              className="mt-1 w-full rounded-lg bg-foreground px-4 py-2.5 text-[14px] font-medium text-white transition-colors hover:bg-foreground/80 disabled:opacity-50"
+            >
+              {loading ? 'Please wait...' : 'Sign in'}
+            </button>
+          </form>
+        </>
+      )}
     </div>
   );
 }
