@@ -25,7 +25,7 @@ export default async function HomePage() {
     .eq('status', 'approved')
     .eq('featured', true)
     .order('upvote_count', { ascending: false })
-    .limit(6);
+    .limit(10);
 
   const { data: comingSoonApps } = await supabase
     .from('apps')
