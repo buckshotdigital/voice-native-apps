@@ -2,8 +2,8 @@
 
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { approveApp, rejectApp, toggleFeatured } from '@/actions/admin';
-import { CheckCircle, XCircle, Star, StarOff } from 'lucide-react';
+import { approveApp, rejectApp, toggleFeatured, hideApp, deleteApp } from '@/actions/admin';
+import { CheckCircle, XCircle, Star, StarOff, EyeOff, Trash2 } from 'lucide-react';
 
 export default function AdminAppActions({
   appId,
@@ -48,6 +48,34 @@ export default function AdminAppActions({
         setMessage('App rejected.');
         setShowRejectForm(false);
         router.refresh();
+      }
+    });
+  }
+
+  function handleHide() {
+    if (!confirm('Hide this app from the directory? You can unhide it later by approving it again.')) return;
+    setError(null);
+    startTransition(async () => {
+      const result = await hideApp(appId);
+      if (result?.error) {
+        setError(result.error);
+      } else {
+        setMessage('App hidden from directory.');
+        router.refresh();
+      }
+    });
+  }
+
+  function handleDelete() {
+    if (!confirm('Permanently delete this app? This cannot be undone.')) return;
+    setError(null);
+    startTransition(async () => {
+      const result = await deleteApp(appId);
+      if (result?.error) {
+        setError(result.error);
+      } else {
+        setMessage('App deleted permanently.');
+        router.push('/admin');
       }
     });
   }
@@ -99,27 +127,37 @@ export default function AdminAppActions({
         )}
 
         {currentStatus === 'approved' && (
-          <button
-            onClick={handleToggleFeatured}
-            disabled={isPending}
-            className={`inline-flex items-center gap-1.5 rounded-lg border px-4 py-2 text-sm font-medium transition disabled:opacity-50 ${
-              isFeatured
-                ? 'border-gray-300 text-gray-700 hover:bg-gray-100'
-                : 'border-indigo-300 bg-indigo-50 text-indigo-700 hover:bg-indigo-100'
-            }`}
-          >
-            {isFeatured ? (
-              <>
-                <StarOff className="h-4 w-4" />
-                Remove Featured
-              </>
-            ) : (
-              <>
-                <Star className="h-4 w-4" />
-                Mark as Featured
-              </>
-            )}
-          </button>
+          <>
+            <button
+              onClick={handleToggleFeatured}
+              disabled={isPending}
+              className={`inline-flex items-center gap-1.5 rounded-lg border px-4 py-2 text-sm font-medium transition disabled:opacity-50 ${
+                isFeatured
+                  ? 'border-gray-300 text-gray-700 hover:bg-gray-100'
+                  : 'border-indigo-300 bg-indigo-50 text-indigo-700 hover:bg-indigo-100'
+              }`}
+            >
+              {isFeatured ? (
+                <>
+                  <StarOff className="h-4 w-4" />
+                  Remove Featured
+                </>
+              ) : (
+                <>
+                  <Star className="h-4 w-4" />
+                  Mark as Featured
+                </>
+              )}
+            </button>
+            <button
+              onClick={handleHide}
+              disabled={isPending}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-50"
+            >
+              <EyeOff className="h-4 w-4" />
+              Hide
+            </button>
+          </>
         )}
 
         {currentStatus === 'rejected' && (
@@ -129,9 +167,18 @@ export default function AdminAppActions({
             className="inline-flex items-center gap-1.5 rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50"
           >
             <CheckCircle className="h-4 w-4" />
-            Approve (override rejection)
+            Approve (unhide)
           </button>
         )}
+
+        <button
+          onClick={handleDelete}
+          disabled={isPending}
+          className="inline-flex items-center gap-1.5 rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+        >
+          <Trash2 className="h-4 w-4" />
+          Delete
+        </button>
       </div>
 
       {/* Reject reason form */}

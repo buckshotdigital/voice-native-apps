@@ -84,6 +84,40 @@ export async function toggleFeatured(appId: string) {
   return { success: true };
 }
 
+export async function hideApp(appId: string) {
+  const { error: authError, supabase } = await requireAdmin();
+  if (authError || !supabase) return { error: authError };
+
+  const { error } = await supabase
+    .from('apps')
+    .update({ status: 'rejected', rejection_reason: 'Hidden by admin.' })
+    .eq('id', appId);
+
+  if (error) return { error: 'Failed to hide app.' };
+
+  revalidatePath('/admin');
+  revalidatePath('/apps');
+  revalidatePath('/');
+  return { success: true };
+}
+
+export async function deleteApp(appId: string) {
+  const { error: authError, supabase } = await requireAdmin();
+  if (authError || !supabase) return { error: authError };
+
+  const { error } = await supabase
+    .from('apps')
+    .delete()
+    .eq('id', appId);
+
+  if (error) return { error: 'Failed to delete app.' };
+
+  revalidatePath('/admin');
+  revalidatePath('/apps');
+  revalidatePath('/');
+  return { success: true };
+}
+
 export async function resolveReport(reportId: string, status: 'resolved' | 'dismissed') {
   const { error: authError, supabase } = await requireAdmin();
   if (authError || !supabase) return { error: authError };
