@@ -60,22 +60,7 @@ export async function submitApp(data: Record<string, unknown>) {
     }
   }
 
-  // Atomic daily submission check — prevents race condition (Finding 4)
-  const { data: allowed, error: quotaError } = await supabase.rpc(
-    'check_and_increment_submissions',
-    { p_user_id: user.id, p_max_submissions: MAX_SUBMISSIONS_PER_DAY }
-  );
-
-  if (quotaError) {
-    console.error('Submission quota check failed:', quotaError.message);
-    return { error: 'Unable to verify submission quota. Please try again.' };
-  }
-
-  if (!allowed) {
-    return { error: `You can submit a maximum of ${MAX_SUBMISSIONS_PER_DAY} apps per day. Please try again tomorrow.` };
-  }
-
-  // Duplicate check by website URL
+  // Duplicate check by website URL (before quota increment so failed checks don't consume quota)
   const { data: existing } = await supabase
     .from('apps')
     .select('id, name')
@@ -96,6 +81,22 @@ export async function submitApp(data: Record<string, unknown>) {
 
   if (similarApps && similarApps.length > 0) {
     return { error: `An app with a similar name already exists: "${similarApps[0].name}".` };
+  }
+
+  // Atomic daily submission check — after all validations pass so quota
+  // only increments for attempts that actually reach the insert.
+  const { data: allowed, error: quotaError } = await supabase.rpc(
+    'check_and_increment_submissions',
+    { p_user_id: user.id, p_max_submissions: MAX_SUBMISSIONS_PER_DAY }
+  );
+
+  if (quotaError) {
+    console.error('Submission quota check failed:', quotaError.message);
+    return { error: 'Unable to verify submission quota. Please try again.' };
+  }
+
+  if (!allowed) {
+    return { error: `You can submit a maximum of ${MAX_SUBMISSIONS_PER_DAY} apps per day. Please try again tomorrow.` };
   }
 
   // Clean optional URL fields — convert empty strings to null
@@ -133,6 +134,13 @@ export async function submitApp(data: Record<string, unknown>) {
   }).select('id').single();
 
   if (insertError) {
+    // Roll back quota counter since insert failed
+    try {
+      const { data: p } = await adminClient.from('profiles').select('submissions_today').eq('id', user.id).single();
+      if (p && p.submissions_today > 0) {
+        await adminClient.from('profiles').update({ submissions_today: p.submissions_today - 1 }).eq('id', user.id);
+      }
+    } catch { /* best-effort rollback */ }
     return { error: 'Failed to submit app. Please try again.' };
   }
 

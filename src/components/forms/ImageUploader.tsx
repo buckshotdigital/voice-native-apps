@@ -35,12 +35,17 @@ export default function ImageUploader({
   async function handleFiles(files: FileList) {
     setError(null);
 
-    if (isMultiple && urls.length + files.length > maxFiles) {
+    // Capture files immediately before any async work — the input gets
+    // cleared (e.target.value = '') right after this function yields,
+    // which would invalidate the FileList reference.
+    const fileArray = Array.from(files);
+
+    if (isMultiple && urls.length + fileArray.length > maxFiles) {
       setError(`Maximum ${maxFiles} images allowed.`);
       return;
     }
 
-    for (const file of Array.from(files)) {
+    for (const file of fileArray) {
       if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
         setError('Only JPEG, PNG, and WebP images are allowed.');
         return;
@@ -54,7 +59,7 @@ export default function ImageUploader({
     setUploading(true);
     const uploadedUrls: string[] = [];
 
-    for (const file of Array.from(files)) {
+    for (const file of fileArray) {
       const ext = file.name.split('.').pop();
       const path = `${userId}/${type}-${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
 
