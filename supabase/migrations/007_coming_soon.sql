@@ -30,15 +30,15 @@ create or replace function update_interest_count()
 returns trigger as $$
 begin
   if (TG_OP = 'INSERT') then
-    update apps set interest_count = interest_count + 1 where id = new.app_id;
+    update public.apps set interest_count = interest_count + 1 where id = new.app_id;
     return new;
   elsif (TG_OP = 'DELETE') then
-    update apps set interest_count = interest_count - 1 where id = old.app_id;
+    update public.apps set interest_count = interest_count - 1 where id = old.app_id;
     return old;
   end if;
   return null;
 end;
-$$ language plpgsql security definer;
+$$ language plpgsql security definer set search_path = public;
 
 create trigger on_interest_change
   after insert or delete on app_interests

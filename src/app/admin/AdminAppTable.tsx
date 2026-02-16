@@ -11,6 +11,7 @@ type AppRow = {
   slug: string;
   logo_url: string | null;
   featured: boolean;
+  is_coming_soon: boolean;
   upvote_count: number;
   view_count: number;
   categoryName: string;
@@ -79,6 +80,11 @@ export default function AdminAppTable({ apps }: { apps: AppRow[] }) {
                         )}
                       </div>
                       <span className="truncate font-medium text-gray-900">{app.name}</span>
+                      {app.is_coming_soon && (
+                        <span className="flex-shrink-0 rounded-full bg-blue-100 px-1.5 py-0.5 text-[10px] font-medium text-blue-700">
+                          Soon
+                        </span>
+                      )}
                     </div>
                   </td>
                   <td className="hidden px-4 py-3 text-gray-500 sm:table-cell">

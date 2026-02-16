@@ -2,7 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { submitAppSchema } from '@/lib/validations';
+import { submitAppSchema, countryCodeSchema } from '@/lib/validations';
 import { MAX_SUBMISSIONS_PER_DAY } from '@/lib/constants';
 import { slugify } from '@/lib/utils';
 import { revalidatePath } from 'next/cache';
@@ -280,7 +280,7 @@ export async function toggleUpvote(appId: string) {
 
 
 
-export async function toggleInterest(appId: string) {
+export async function toggleInterest(appId: string, country?: string) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -293,6 +293,9 @@ export async function toggleInterest(appId: string) {
   if (!rl.success) {
     return { error: 'Too many requests. Please slow down.' };
   }
+
+  // Validate country code if provided
+  const validCountry = country && countryCodeSchema.safeParse(country).success ? country : null;
 
   // Check if already interested
   const { data: existing } = await supabase
@@ -313,7 +316,7 @@ export async function toggleInterest(appId: string) {
   } else {
     const { error } = await supabase
       .from('app_interests')
-      .insert({ user_id: user.id, app_id: appId });
+      .insert({ user_id: user.id, app_id: appId, country: validCountry });
 
     if (error) return { error: 'Failed to express interest.' };
   }

@@ -24,4 +24,10 @@ export const env = {
   get SUPABASE_SERVICE_ROLE_KEY() {
     return requireEnv('SUPABASE_SERVICE_ROLE_KEY');
   },
+  get STRIPE_SECRET_KEY() {
+    return requireEnv('STRIPE_SECRET_KEY');
+  },
+  get STRIPE_WEBHOOK_SECRET() {
+    return requireEnv('STRIPE_WEBHOOK_SECRET');
+  },
 } as const;

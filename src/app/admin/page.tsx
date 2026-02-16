@@ -60,7 +60,7 @@ export default async function AdminPage() {
   // All approved apps for featured management
   const { data: allApprovedApps } = await supabase
     .from('apps')
-    .select('id, name, slug, logo_url, featured, upvote_count, view_count, category:categories(name)')
+    .select('id, name, slug, logo_url, featured, is_coming_soon, upvote_count, view_count, category:categories(name)')
     .eq('status', 'approved')
     .order('featured', { ascending: false })
     .order('name', { ascending: true });
@@ -125,7 +125,14 @@ export default async function AdminPage() {
                   </div>
 
                   <div className="min-w-0 flex-1">
-                    <h3 className="truncate font-semibold text-gray-900">{app.name}</h3>
+                    <div className="flex items-center gap-2">
+                      <h3 className="truncate font-semibold text-gray-900">{app.name}</h3>
+                      {app.is_coming_soon && (
+                        <span className="flex-shrink-0 rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700">
+                          Coming Soon
+                        </span>
+                      )}
+                    </div>
                     <p className="truncate text-sm text-gray-500">{app.tagline}</p>
                     <p className="mt-1 text-xs text-gray-400">
                       by {(app.submitter as Record<string, string>)?.display_name || (app.submitter as Record<string, string>)?.email || 'Unknown'} &middot;{' '}
@@ -199,6 +206,7 @@ export default async function AdminPage() {
             slug: app.slug,
             logo_url: app.logo_url,
             featured: app.featured,
+            is_coming_soon: app.is_coming_soon,
             upvote_count: app.upvote_count,
             view_count: app.view_count,
             categoryName: (app.category as unknown as { name: string } | null)?.name || '—',
@@ -226,6 +234,11 @@ export default async function AdminPage() {
                   <div className="flex items-center gap-2">
                     <h3 className="truncate text-sm font-medium text-gray-900">{app.name}</h3>
                     <StatusBadge status={app.status} />
+                    {app.is_coming_soon && (
+                      <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700">
+                        Coming Soon
+                      </span>
+                    )}
                   </div>
                 </div>
                 <Link

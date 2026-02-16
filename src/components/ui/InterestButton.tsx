@@ -33,6 +33,11 @@ export default function InterestButton({
     }
   }
 
+  function getCountry(): string | undefined {
+    const match = document.cookie.match(/(?:^|;\s*)x-country=([A-Z]{2})/);
+    return match?.[1];
+  }
+
   function doToggle() {
     const wasInterested = interested;
     const prevCount = count;
@@ -42,7 +47,8 @@ export default function InterestButton({
     setShowConsent(false);
 
     startTransition(async () => {
-      const result = await toggleInterest(appId);
+      const country = getCountry();
+      const result = await toggleInterest(appId, country);
       if (result?.error) {
         setInterested(wasInterested);
         setCount(prevCount);

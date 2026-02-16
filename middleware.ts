@@ -72,6 +72,17 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  // Set country cookie from Vercel geo header for interest tracking
+  const country = request.headers.get('x-vercel-ip-country');
+  if (country && /^[A-Z]{2}$/.test(country)) {
+    supabaseResponse.cookies.set('x-country', country, {
+      httpOnly: false,
+      maxAge: 3600, // 1 hour
+      path: '/',
+      sameSite: 'lax',
+    });
+  }
+
   return supabaseResponse;
 }
 

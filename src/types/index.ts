@@ -82,7 +82,36 @@ export interface Upvote {
 export interface AppInterest {
   user_id: string;
   app_id: string;
+  country: string | null;
   created_at: string;
+}
+
+export interface AppUnlock {
+  id: string;
+  app_id: string;
+  unlocked_by: string;
+  stripe_checkout_session_id: string;
+  stripe_payment_intent_id: string | null;
+  amount_cents: number;
+  currency: string;
+  created_at: string;
+}
+
+export interface InterestTimelinePoint {
+  day: string;
+  count: number;
+}
+
+export interface InterestCountryBreakdown {
+  country: string;
+  count: number;
+}
+
+export interface InterestedUser {
+  email: string;
+  display_name: string | null;
+  country: string | null;
+  interested_at: string;
 }
 
 export interface Report {

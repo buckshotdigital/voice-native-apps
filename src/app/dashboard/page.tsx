@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/server';
 import StatusBadge from '@/components/ui/StatusBadge';
 import LaunchButton from '@/components/ui/LaunchButton';
 import { formatDate } from '@/lib/utils';
-import { Plus, Edit, ExternalLink, Bell } from 'lucide-react';
+import { Plus, Edit, ExternalLink, Bell, BarChart3 } from 'lucide-react';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -143,7 +143,16 @@ export default async function DashboardPage() {
                 {/* Actions */}
                 <div className="flex gap-2">
                   {app.is_coming_soon && app.status === 'approved' && (
-                    <LaunchButton appId={app.id} />
+                    <>
+                      <Link
+                        href={`/dashboard/interests/${app.id}`}
+                        className="rounded-lg border border-gray-200 p-2 text-gray-400 hover:bg-gray-50 hover:text-blue-600"
+                        title="View interest analytics"
+                      >
+                        <BarChart3 className="h-4 w-4" />
+                      </Link>
+                      <LaunchButton appId={app.id} />
+                    </>
                   )}
                   {app.status === 'approved' && (
                     <Link

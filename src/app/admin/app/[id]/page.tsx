@@ -75,6 +75,11 @@ export default async function AdminAppReviewPage({
           <div className="flex items-center gap-3">
             <h1 className="text-2xl font-bold text-gray-900">{app.name}</h1>
             <StatusBadge status={app.status} />
+            {app.is_coming_soon && (
+              <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700">
+                Coming Soon
+              </span>
+            )}
             {app.featured && (
               <span className="rounded-full bg-indigo-100 px-2 py-0.5 text-xs font-medium text-indigo-700">
                 Featured
@@ -170,6 +175,20 @@ export default async function AdminAppReviewPage({
                 <dt className="text-gray-500">Platforms</dt>
                 <dd><PlatformBadges platforms={app.platforms} /></dd>
               </div>
+              {app.is_coming_soon && (
+                <>
+                  <div className="flex justify-between">
+                    <dt className="text-gray-500">Interest Count</dt>
+                    <dd className="text-blue-600 font-medium">{app.interest_count}</dd>
+                  </div>
+                  {app.expected_launch_date && (
+                    <div className="flex justify-between">
+                      <dt className="text-gray-500">Expected Launch</dt>
+                      <dd>{app.expected_launch_date}</dd>
+                    </div>
+                  )}
+                </>
+              )}
               <div className="flex justify-between">
                 <dt className="text-gray-500">Upvotes</dt>
                 <dd>{app.upvote_count}</dd>

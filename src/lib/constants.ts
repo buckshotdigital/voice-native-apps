@@ -53,3 +53,6 @@ export const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
 export const APP_STORE_URL_REGEX = /^https:\/\/apps\.apple\.com\/.+/;
 export const PLAY_STORE_URL_REGEX = /^https:\/\/play\.google\.com\/store\/apps\/.+/;
+
+export const UNLOCK_PRICE_CENTS = parseInt(process.env.STRIPE_PRICE_UNLOCK_CENTS || '499', 10);
+export const UNLOCK_PRICE_DISPLAY = `$${(UNLOCK_PRICE_CENTS / 100).toFixed(2)}`;

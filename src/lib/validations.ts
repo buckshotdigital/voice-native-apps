@@ -23,7 +23,7 @@ export const submitAppSchema = z.object({
   pricing_model: z.enum(['free', 'freemium', 'paid', 'subscription']),
   pricing_details: z.string().max(100).optional().or(z.literal('')),
   is_coming_soon: z.boolean().default(false),
-  expected_launch_date: z.string().optional().or(z.literal('')),
+  expected_launch_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Expected launch date must be a valid date').optional().or(z.literal('')),
   tags: z.array(
     z.string()
       .min(2, 'Tag must be at least 2 characters')
@@ -62,3 +62,5 @@ export const signUpSchema = z.object({
 });
 
 export type SignUpInput = z.infer<typeof signUpSchema>;
+
+export const countryCodeSchema = z.string().regex(/^[A-Z]{2}$/, 'Invalid country code');
