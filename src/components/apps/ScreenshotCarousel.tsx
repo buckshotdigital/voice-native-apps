@@ -24,12 +24,14 @@ export default function ScreenshotCarousel({ screenshots }: { screenshots: strin
       {screenshots.length > 1 && (
         <>
           <button
+            aria-label="Previous screenshot"
             onClick={() => setCurrent((prev) => (prev === 0 ? screenshots.length - 1 : prev - 1))}
             className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-white/80 p-2.5 shadow-md backdrop-blur-sm transition hover:bg-white sm:p-1.5"
           >
             <ChevronLeft className="h-5 w-5 text-gray-700" />
           </button>
           <button
+            aria-label="Next screenshot"
             onClick={() => setCurrent((prev) => (prev === screenshots.length - 1 ? 0 : prev + 1))}
             className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-white/80 p-2.5 shadow-md backdrop-blur-sm transition hover:bg-white sm:p-1.5"
           >
@@ -41,6 +43,7 @@ export default function ScreenshotCarousel({ screenshots }: { screenshots: strin
             {screenshots.map((_, i) => (
               <button
                 key={i}
+                aria-label={`Go to screenshot ${i + 1}`}
                 onClick={() => setCurrent(i)}
                 className={`h-3 w-3 rounded-full transition sm:h-2 sm:w-2 ${
                   i === current ? 'bg-indigo-600' : 'bg-gray-300'

@@ -146,6 +146,7 @@ export default function Header() {
 
         {/* Mobile toggle */}
         <button
+          aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
           className="flex h-10 w-10 items-center justify-center rounded-md text-muted transition-colors hover:bg-surface md:hidden"
           onClick={() => setMobileOpen(!mobileOpen)}
         >
@@ -158,7 +159,7 @@ export default function Header() {
 
       {/* Mobile nav */}
       {mobileOpen && (
-        <div className="border-t bg-white px-4 py-2 sm:px-6 md:hidden">
+        <div className="border-t bg-white px-4 py-3 sm:px-6 md:hidden">
           <div className="flex flex-col">
             <Link href="/apps" className="rounded-md px-3 py-3 text-[14px] font-medium text-muted hover:bg-surface hover:text-foreground" onClick={() => setMobileOpen(false)}>
               Directory
