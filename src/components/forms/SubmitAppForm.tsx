@@ -6,8 +6,9 @@ import { submitApp, updateApp } from '@/actions/apps';
 import ImageUploader from './ImageUploader';
 import TagInput from './TagInput';
 import { PLATFORMS, PRICING_MODELS, VOICE_FEATURES, MAX_SCREENSHOTS } from '@/lib/constants';
+import PlatformIcon from '@/components/ui/PlatformIcon';
 import { AlertCircle, CheckCircle } from 'lucide-react';
-import type { Category, App } from '@/types';
+import type { Category, App, Platform } from '@/types';
 
 interface SubmitAppFormProps {
   categories: Category[];
@@ -271,7 +272,7 @@ export default function SubmitAppForm({ categories, userId, editApp }: SubmitApp
                   : 'border-gray-200 text-gray-600 hover:border-gray-300'
               }`}
             >
-              <span>{p.icon}</span>
+              <PlatformIcon platform={p.value as Platform} className="h-4 w-4" />
               {p.label}
             </button>
           ))}

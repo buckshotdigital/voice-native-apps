@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { truncate } from '@/lib/utils';
 import type { App } from '@/types';
 import { PLATFORMS, PRICING_MODELS } from '@/lib/constants';
+import PlatformIcon from '@/components/ui/PlatformIcon';
 import UpvoteChip from './UpvoteChip';
 import InterestChip from './InterestChip';
 
@@ -60,8 +61,8 @@ export default function AppCard({ app, userId, userUpvoted, userInterested }: { 
           {app.platforms.slice(0, 3).map((p) => {
             const platform = PLATFORMS.find((pl) => pl.value === p);
             return platform ? (
-              <span key={p} className="text-[12px]" title={platform.label}>
-                {platform.icon}
+              <span key={p} className="text-muted" title={platform.label}>
+                <PlatformIcon platform={p} className="h-3.5 w-3.5" />
               </span>
             ) : null;
           })}

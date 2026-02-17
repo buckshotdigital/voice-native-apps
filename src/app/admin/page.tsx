@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/server';
 import StatusBadge from '@/components/ui/StatusBadge';
 import AdminAppTable from './AdminAppTable';
 import { formatDate } from '@/lib/utils';
-import { Eye, Clock, CheckCircle, Flag, AlertTriangle } from 'lucide-react';
+import { Eye, Clock, CheckCircle, Flag, AlertTriangle, MessageSquare } from 'lucide-react';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -50,6 +50,14 @@ export default async function AdminPage() {
     .eq('status', 'pending')
     .order('created_at', { ascending: true })
     .limit(50);
+
+  // Fetch contact messages
+  const { data: contactMessages, count: messageCount } = await supabase
+    .from('contact_messages')
+    .select('*', { count: 'exact' })
+    .eq('status', 'open')
+    .order('created_at', { ascending: true })
+    .limit(20);
 
   // Stats
   const { count: totalApproved } = await supabase
@@ -193,6 +201,34 @@ export default async function AdminPage() {
                 </div>
               );
             })}
+          </div>
+        </div>
+      )}
+
+      {/* Contact Messages */}
+      {contactMessages && contactMessages.length > 0 && (
+        <div className="mt-10">
+          <h2 className="flex items-center gap-2 text-xl font-bold text-gray-900">
+            <MessageSquare className="h-5 w-5 text-blue-500" />
+            Contact Messages ({messageCount || 0})
+          </h2>
+          <div className="mt-4 space-y-3">
+            {contactMessages.map((msg) => (
+              <div
+                key={msg.id}
+                className="rounded-xl border border-blue-200 bg-blue-50/50 p-4"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium text-gray-900">{msg.subject}</p>
+                    <p className="mt-1 text-xs text-gray-500">
+                      From: {msg.email} &middot; {formatDate(msg.created_at)}
+                    </p>
+                    <p className="mt-2 whitespace-pre-wrap text-sm text-gray-600">{msg.message}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}

@@ -1,4 +1,5 @@
 import { PLATFORMS } from '@/lib/constants';
+import PlatformIcon from '@/components/ui/PlatformIcon';
 import type { Platform } from '@/types';
 
 export default function PlatformBadges({
@@ -9,6 +10,7 @@ export default function PlatformBadges({
   size?: 'sm' | 'md';
 }) {
   const sizeClasses = size === 'sm' ? 'text-xs px-1.5 py-0.5' : 'text-sm px-2 py-1';
+  const iconSize = size === 'sm' ? 'h-3 w-3' : 'h-3.5 w-3.5';
 
   return (
     <div className="flex flex-wrap gap-1">
@@ -21,7 +23,7 @@ export default function PlatformBadges({
             className={`inline-flex items-center gap-1 rounded-md bg-gray-100 text-gray-700 ${sizeClasses}`}
             title={config.label}
           >
-            <span>{config.icon}</span>
+            <PlatformIcon platform={platform} className={iconSize} />
             <span>{config.label}</span>
           </span>
         );

@@ -3,8 +3,9 @@
 import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { PLATFORMS, PRICING_MODELS } from '@/lib/constants';
+import PlatformIcon from '@/components/ui/PlatformIcon';
 import { ChevronDown } from 'lucide-react';
-import type { Category } from '@/types';
+import type { Category, Platform } from '@/types';
 
 export default function FilterPanel({ categories }: { categories: Category[] }) {
   const router = useRouter();
@@ -88,12 +89,13 @@ export default function FilterPanel({ categories }: { categories: Category[] }) 
             <button
               key={p.value}
               onClick={() => updateFilter('platform', p.value)}
-              className={`block w-full rounded-md px-2.5 py-2 text-left text-[13px] transition-colors ${
+              className={`flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-left text-[13px] transition-colors ${
                 currentPlatform === p.value
                   ? 'bg-surface font-medium text-foreground'
                   : 'text-muted hover:text-foreground'
               }`}
             >
+              <PlatformIcon platform={p.value as Platform} className="h-3.5 w-3.5" />
               {p.label}
             </button>
           ))}
