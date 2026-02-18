@@ -1,6 +1,5 @@
 import { notFound } from 'next/navigation';
 
-import Image from 'next/image';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import PlatformBadges from '@/components/apps/PlatformBadges';
@@ -9,6 +8,7 @@ import ScreenshotCarousel from '@/components/apps/ScreenshotCarousel';
 import UpvoteButton from '@/components/ui/UpvoteButton';
 import InterestButton from '@/components/ui/InterestButton';
 import ReportDialog from '@/components/ui/ReportDialog';
+import AppLogo from '@/components/ui/AppLogo';
 import { formatDate } from '@/lib/utils';
 import { PLATFORMS, PRICING_MODELS } from '@/lib/constants';
 import {
@@ -167,20 +167,7 @@ export default async function AppDetailPage({
           {/* Header */}
           <div className="flex items-start gap-3 sm:gap-5">
             <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-2xl bg-gray-100 sm:h-20 sm:w-20">
-              {app.logo_url ? (
-                <Image
-                  src={app.logo_url}
-                  alt={`${app.name} logo`}
-                  className="h-full w-full object-cover"
-                  fill
-                  sizes="80px"
-                  priority
-                />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center text-2xl font-bold text-gray-400">
-                  {app.name[0]}
-                </div>
-              )}
+              <AppLogo src={app.logo_url} appName={app.name} sizes="80px" priority />
             </div>
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-2">

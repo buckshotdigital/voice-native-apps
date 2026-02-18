@@ -2,6 +2,7 @@ import { notFound, redirect } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
+import AppLogo from '@/components/ui/AppLogo';
 import PlatformBadges from '@/components/apps/PlatformBadges';
 import PricingBadge from '@/components/apps/PricingBadge';
 import StatusBadge from '@/components/ui/StatusBadge';
@@ -63,13 +64,7 @@ export default async function AdminAppReviewPage({
       {/* Header */}
       <div className="flex items-start gap-5">
         <div className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-2xl bg-gray-100">
-          {app.logo_url ? (
-            <Image src={app.logo_url} alt={app.name} fill className="object-cover" sizes="80px" />
-          ) : (
-            <div className="flex h-full w-full items-center justify-center text-2xl font-bold text-gray-400">
-              {app.name[0]}
-            </div>
-          )}
+          <AppLogo src={app.logo_url} appName={app.name} sizes="80px" />
         </div>
         <div>
           <div className="flex items-center gap-3">

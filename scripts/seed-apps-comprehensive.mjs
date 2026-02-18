@@ -1804,9 +1804,9 @@ async function seed() {
     let logoUrl;
     try {
       const domain = new URL(app.website_url).hostname.replace('www.', '');
-      logoUrl = `https://logo.clearbit.com/${domain}`;
+      logoUrl = `https://www.google.com/s2/favicons?domain=${domain}&sz=128`;
     } catch {
-      logoUrl = `https://logo.clearbit.com/${app.name.toLowerCase().replace(/\s+/g, '')}.com`;
+      logoUrl = `https://www.google.com/s2/favicons?domain=${app.name.toLowerCase().replace(/\s+/g, '')}.com&sz=128`;
     }
 
     const { data: newApp, error: insertError } = await supabase

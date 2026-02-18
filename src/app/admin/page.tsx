@@ -1,8 +1,8 @@
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import Image from 'next/image';
 import { createClient } from '@/lib/supabase/server';
 import StatusBadge from '@/components/ui/StatusBadge';
+import AppLogo from '@/components/ui/AppLogo';
 import AdminAppTable from './AdminAppTable';
 import { formatDate } from '@/lib/utils';
 import { Eye, Clock, CheckCircle, Flag, AlertTriangle, MessageSquare } from 'lucide-react';
@@ -123,13 +123,7 @@ export default async function AdminPage() {
               >
                 <div className="flex items-center gap-3 sm:gap-4">
                   <div className="relative h-10 w-10 flex-shrink-0 overflow-hidden rounded-xl bg-gray-100 sm:h-12 sm:w-12">
-                    {app.logo_url ? (
-                      <Image src={app.logo_url} alt={app.name} fill className="object-cover" sizes="48px" />
-                    ) : (
-                      <div className="flex h-full w-full items-center justify-center text-lg font-bold text-gray-400">
-                        {app.name[0]}
-                      </div>
-                    )}
+                    <AppLogo src={app.logo_url} appName={app.name} sizes="48px" />
                   </div>
 
                   <div className="min-w-0 flex-1">
@@ -258,13 +252,7 @@ export default async function AdminPage() {
             {recentApps.map((app) => (
               <div key={app.id} className="flex items-center gap-4 rounded-xl border border-gray-200 bg-white p-4">
                 <div className="relative h-10 w-10 flex-shrink-0 overflow-hidden rounded-lg bg-gray-100">
-                  {app.logo_url ? (
-                    <Image src={app.logo_url} alt={app.name} fill className="object-cover" sizes="40px" />
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center text-sm font-bold text-gray-400">
-                      {app.name[0]}
-                    </div>
-                  )}
+                  <AppLogo src={app.logo_url} appName={app.name} sizes="40px" />
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">

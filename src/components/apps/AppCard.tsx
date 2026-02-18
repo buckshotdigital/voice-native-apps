@@ -1,9 +1,9 @@
-import Image from 'next/image';
 import Link from 'next/link';
 import { truncate } from '@/lib/utils';
 import type { App } from '@/types';
 import { PLATFORMS, PRICING_MODELS } from '@/lib/constants';
 import PlatformIcon from '@/components/ui/PlatformIcon';
+import AppLogo from '@/components/ui/AppLogo';
 import UpvoteChip from './UpvoteChip';
 import InterestChip from './InterestChip';
 
@@ -18,19 +18,7 @@ export default function AppCard({ app, userId, userUpvoted, userInterested }: { 
       {/* Top row: logo + meta */}
       <div className="flex items-start gap-2.5 sm:gap-3.5">
         <div className="relative h-10 w-10 flex-shrink-0 overflow-hidden rounded-[10px] bg-surface sm:h-11 sm:w-11">
-          {app.logo_url ? (
-            <Image
-              src={app.logo_url}
-              alt={app.name}
-              className="h-full w-full object-cover"
-              fill
-              sizes="44px"
-            />
-          ) : (
-            <div className="flex h-full w-full items-center justify-center text-sm font-semibold text-muted">
-              {app.name[0]}
-            </div>
-          )}
+          <AppLogo src={app.logo_url} appName={app.name} sizes="44px" />
         </div>
 
         <div className="min-w-0 flex-1">

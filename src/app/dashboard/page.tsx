@@ -1,8 +1,8 @@
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import Image from 'next/image';
 import { createClient } from '@/lib/supabase/server';
 import StatusBadge from '@/components/ui/StatusBadge';
+import AppLogo from '@/components/ui/AppLogo';
 import LaunchButton from '@/components/ui/LaunchButton';
 import { formatDate } from '@/lib/utils';
 import { Plus, Edit, ExternalLink, Bell, BarChart3 } from 'lucide-react';
@@ -102,19 +102,7 @@ export default async function DashboardPage() {
               >
                 {/* Logo */}
                 <div className="relative h-10 w-10 flex-shrink-0 overflow-hidden rounded-xl bg-gray-100 sm:h-12 sm:w-12">
-                  {app.logo_url ? (
-                    <Image
-                      src={app.logo_url}
-                      alt={app.name}
-                      fill
-                      className="object-cover"
-                      sizes="48px"
-                    />
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center text-lg font-bold text-gray-400">
-                      {app.name[0]}
-                    </div>
-                  )}
+                  <AppLogo src={app.logo_url} appName={app.name} sizes="48px" />
                 </div>
 
                 {/* Info */}

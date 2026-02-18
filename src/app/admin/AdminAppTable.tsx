@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
+import AppLogo from '@/components/ui/AppLogo';
 import { Star, StarOff, LayoutGrid, Search } from 'lucide-react';
 
 type AppRow = {
@@ -71,13 +71,7 @@ export default function AdminAppTable({ apps }: { apps: AppRow[] }) {
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
                       <div className="relative h-8 w-8 flex-shrink-0 overflow-hidden rounded-lg bg-gray-100">
-                        {app.logo_url ? (
-                          <Image src={app.logo_url} alt={app.name} fill className="object-cover" sizes="32px" />
-                        ) : (
-                          <div className="flex h-full w-full items-center justify-center text-xs font-bold text-gray-400">
-                            {app.name[0]}
-                          </div>
-                        )}
+                        <AppLogo src={app.logo_url} appName={app.name} sizes="32px" />
                       </div>
                       <span className="truncate font-medium text-gray-900">{app.name}</span>
                       {app.is_coming_soon && (
