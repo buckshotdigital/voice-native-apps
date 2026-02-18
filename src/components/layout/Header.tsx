@@ -18,19 +18,19 @@ export default function Header() {
 
   useEffect(() => {
     const supabase = supabaseRef.current;
-    async function loadUser() {
-      const { data: { user: authUser } } = await supabase.auth.getUser();
-      if (authUser) {
-        setUser(authUser);
+    async function loadSession() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        setUser(session.user);
         const { data } = await supabase
           .from('profiles')
           .select('*')
-          .eq('id', authUser.id)
+          .eq('id', session.user.id)
           .single();
         setProfile(data);
       }
     }
-    loadUser();
+    loadSession();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (session?.user) {
