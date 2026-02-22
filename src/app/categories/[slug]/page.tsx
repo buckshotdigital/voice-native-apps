@@ -8,6 +8,7 @@ import type { Metadata } from 'next';
 import {
   generateCollectionPageSchema,
   generateBreadcrumbSchema,
+  generateItemListSchema,
 } from '@/lib/structured-data';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://voicenativeapps.com';
@@ -21,15 +22,27 @@ export async function generateMetadata({
   const supabase = await createClient();
   const { data: category } = await supabase
     .from('categories')
-    .select('name, description')
+    .select('name, description, id')
     .eq('slug', slug)
     .single();
 
   if (!category) return { title: 'Category Not Found' };
 
+  const { count: appCount } = await supabase
+    .from('apps')
+    .select('*', { count: 'exact', head: true })
+    .eq('status', 'approved')
+    .eq('category_id', category.id);
+
+  const count = appCount || 0;
+  const title = count > 0
+    ? `Best ${category.name} Voice Apps (${count}+ Listed) - 2026`
+    : `${category.name} Voice Apps - 2026`;
+  const description = `Compare ${count > 0 ? `${count}+ ` : ''}voice-native ${category.name.toLowerCase()} apps. ${category.description} Find the right voice-first tool for your needs.`;
+
   return {
-    title: `${category.name} Voice Apps`,
-    description: `Browse voice-native applications in ${category.name}. ${category.description}`,
+    title,
+    description,
     alternates: { canonical: `/categories/${slug}` },
   };
 }
@@ -115,6 +128,22 @@ export default async function CategoryPage({
           ),
         }}
       />
+      {apps && apps.length > 0 && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(
+              generateItemListSchema(
+                apps.map((app) => ({
+                  name: app.name,
+                  url: `${SITE_URL}/apps/${app.slug}`,
+                })),
+                `Best ${category.name} Voice Apps`,
+              ),
+            ),
+          }}
+        />
+      )}
 
       {/* Header */}
       <div className="mb-8">

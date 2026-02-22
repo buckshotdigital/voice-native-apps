@@ -51,21 +51,23 @@ export async function generateMetadata({
   const pricingLabel =
     PRICING_MODELS.find((m) => m.value === app.pricing_model)?.label || app.pricing_model;
 
-  const description = `${app.tagline} Available on ${platformLabels.join(', ')}. ${pricingLabel} voice-native app with ${(app.voice_features || []).slice(0, 3).join(', ')}.`;
+  const featureSnippet = (app.voice_features || []).slice(0, 3).join(', ');
+  const title = `${app.name} - Voice App Features, Pricing & Alternatives`;
+  const description = `${app.tagline} ${pricingLabel} voice app available on ${platformLabels.join(', ')}${featureSnippet ? `. Key features: ${featureSnippet}` : ''}. See details, screenshots, and similar apps.`;
 
   return {
-    title: app.name,
+    title,
     description,
-    keywords: [app.name, 'voice app', ...(app.voice_features || [])],
+    keywords: [app.name, `${app.name} review`, `${app.name} alternative`, 'voice app', ...(app.voice_features || [])],
     alternates: { canonical: `/apps/${slug}` },
     openGraph: {
-      title: app.name,
+      title,
       description,
       images: app.logo_url ? [app.logo_url] : [],
     },
     twitter: {
       card: 'summary_large_image',
-      title: app.name,
+      title,
       description,
       images: app.logo_url ? [app.logo_url] : [],
     },

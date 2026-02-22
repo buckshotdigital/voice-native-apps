@@ -21,11 +21,11 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://voicenativeapps.co
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: 'VoiceNative Directory - Discover Voice-First Applications',
+    default: 'VoiceNative Directory - Find the Best Voice-First Apps (2026)',
     template: '%s | VoiceNative Directory',
   },
   description:
-    'The curated directory for voice-native applications. Browse, search, and discover apps that put voice interaction first.',
+    'Browse 100+ curated voice-native apps across 10+ categories. Compare features, pricing, and platforms to find the best voice-first app for your needs.',
   keywords: [
     'voice apps',
     'voice-native',
@@ -37,6 +37,7 @@ export const metadata: Metadata = {
     'conversational AI',
     'voice technology',
     'app directory',
+    'best voice apps 2026',
   ],
   authors: [{ name: 'VoiceNative Directory' }],
   creator: 'VoiceNative Directory',
@@ -45,16 +46,16 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'en_US',
     siteName: 'VoiceNative Directory',
-    title: 'VoiceNative Directory - Discover Voice-First Applications',
+    title: 'VoiceNative Directory - Find the Best Voice-First Apps (2026)',
     description:
-      'The curated directory for voice-native applications. Browse, search, and discover apps that put voice interaction first.',
+      'Browse 100+ curated voice-native apps across 10+ categories. Compare features, pricing, and platforms to find the best voice-first app for your needs.',
     images: [{ url: '/og-default.png', width: 1200, height: 630, alt: 'VoiceNative Directory' }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'VoiceNative Directory - Discover Voice-First Applications',
+    title: 'VoiceNative Directory - Find the Best Voice-First Apps (2026)',
     description:
-      'The curated directory for voice-native applications. Browse, search, and discover apps that put voice interaction first.',
+      'Browse 100+ curated voice-native apps across 10+ categories. Compare features, pricing, and platforms to find the best voice-first app for your needs.',
     images: ['/og-default.png'],
   },
   robots: {

@@ -7,14 +7,30 @@ import { ArrowRight } from 'lucide-react';
 import {
   generateOrganizationSchema,
   generateWebSiteSchema,
+  generateFAQSchema,
 } from '@/lib/structured-data';
 
-export const metadata: Metadata = {
-  title: {
-    absolute: 'VoiceNative Directory - Discover Voice-First Applications',
-  },
-  alternates: { canonical: '/' },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const supabase = await createClient();
+  const { count: totalApps } = await supabase
+    .from('apps')
+    .select('*', { count: 'exact', head: true })
+    .eq('status', 'approved');
+  const { count: categoryCount } = await supabase
+    .from('categories')
+    .select('*', { count: 'exact', head: true });
+
+  const appCount = totalApps || 100;
+  const catCount = categoryCount || 10;
+
+  return {
+    title: {
+      absolute: `${appCount}+ Voice-First Apps - Browse the VoiceNative Directory (2026)`,
+    },
+    description: `Discover ${appCount}+ curated voice-native apps across ${catCount} categories. Compare voice assistants, smart home apps, AI tools, and more. Find the perfect voice-first app today.`,
+    alternates: { canonical: '/' },
+  };
+}
 
 export default async function HomePage() {
   const supabase = await createClient();
@@ -97,6 +113,25 @@ export default async function HomePage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{
           __html: JSON.stringify(generateOrganizationSchema()),
+        }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(generateFAQSchema([
+            {
+              question: 'What is a voice-native app?',
+              answer: 'A voice-native app is an application designed with voice as the primary interface, not an afterthought. These apps use speech recognition, natural language processing, and conversational AI to let users interact through voice commands, dictation, or full conversations.',
+            },
+            {
+              question: 'How many voice-native apps are listed?',
+              answer: `VoiceNative Directory currently lists ${totalApps || 100}+ curated voice-first applications across ${categories?.length || 10} categories including voice assistants, smart home control, accessibility tools, and more.`,
+            },
+            {
+              question: 'Is VoiceNative Directory free to use?',
+              answer: 'Yes, browsing and searching the VoiceNative Directory is completely free. You can discover, compare, and find voice-first apps without any cost.',
+            },
+          ])),
         }}
       />
 

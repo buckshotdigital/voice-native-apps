@@ -36,11 +36,13 @@ export async function generateMetadata({
   if (params.pricing) parts.push(params.pricing);
 
   const description = hasFilters
-    ? `Browse voice-native apps filtered by ${parts.join(', ')}.`
-    : 'Search and filter voice-native applications across categories, platforms, and pricing models.';
+    ? `Browse voice-native apps filtered by ${parts.join(', ')}. Compare features, pricing, and platforms.`
+    : 'Search and compare 100+ voice-native apps by category, platform, and pricing. Find free and paid voice-first tools for iOS, Android, Web, and more.';
 
   return {
-    title: 'Directory',
+    title: hasFilters
+      ? `${parts.join(', ')} Voice Apps`
+      : 'Browse All Voice-First Apps - Filter by Category, Platform & Price',
     description,
     alternates: { canonical: '/apps' },
     ...(hasFilters || (params.page && parseInt(params.page) > 1)
