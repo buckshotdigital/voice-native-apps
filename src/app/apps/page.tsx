@@ -35,14 +35,21 @@ export async function generateMetadata({
   if (params.platform) parts.push(params.platform);
   if (params.pricing) parts.push(params.pricing);
 
+  const supabase = await createClient();
+  const { count: totalCount } = await supabase
+    .from('apps')
+    .select('*', { count: 'exact', head: true })
+    .eq('status', 'approved');
+  const appTotal = totalCount || 100;
+
   const description = hasFilters
     ? `Browse voice-native apps filtered by ${parts.join(', ')}. Compare features, pricing, and platforms.`
-    : 'Search and compare 100+ voice-native apps by category, platform, and pricing. Find free and paid voice-first tools for iOS, Android, Web, and more.';
+    : `Search and compare ${appTotal}+ voice-native apps by category, platform, and pricing. Free and paid voice-first tools for iOS, Android, Web, and more. Filter by platform and price to find your ideal tool.`;
 
   return {
     title: hasFilters
       ? `${parts.join(', ')} Voice Apps`
-      : 'Browse All Voice-First Apps - Filter by Category, Platform & Price',
+      : `Browse ${appTotal}+ Voice Apps - Compare Features & Pricing (2026)`,
     description,
     alternates: { canonical: '/apps' },
     ...(hasFilters || (params.page && parseInt(params.page) > 1)

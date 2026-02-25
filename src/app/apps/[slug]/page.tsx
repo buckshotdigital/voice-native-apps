@@ -52,25 +52,15 @@ export async function generateMetadata({
     PRICING_MODELS.find((m) => m.value === app.pricing_model)?.label || app.pricing_model;
 
   const featureSnippet = (app.voice_features || []).slice(0, 3).join(', ');
-  const title = `${app.name} - Voice App Features, Pricing & Alternatives`;
-  const description = `${app.tagline} ${pricingLabel} voice app available on ${platformLabels.join(', ')}${featureSnippet ? `. Key features: ${featureSnippet}` : ''}. See details, screenshots, and similar apps.`;
+  const topPlatforms = platformLabels.slice(0, 3).join(', ');
+  const title = `${app.name} Review: ${pricingLabel} Voice App for ${topPlatforms}`;
+  const description = `${app.tagline} ${pricingLabel} voice app available on ${platformLabels.join(', ')}${featureSnippet ? `. Key features: ${featureSnippet}` : ''}. Compare alternatives and get started today.`;
 
   return {
     title,
     description,
     keywords: [app.name, `${app.name} review`, `${app.name} alternative`, 'voice app', ...(app.voice_features || [])],
     alternates: { canonical: `/apps/${slug}` },
-    openGraph: {
-      title,
-      description,
-      images: app.logo_url ? [app.logo_url] : [],
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title,
-      description,
-      images: app.logo_url ? [app.logo_url] : [],
-    },
   };
 }
 

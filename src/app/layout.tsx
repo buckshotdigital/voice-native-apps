@@ -21,11 +21,11 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://voicenativeapps.co
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: 'VoiceNative Directory - Find the Best Voice-First Apps (2026)',
+    default: 'Best Voice-First Apps Directory (2026) - Compare 100+ Free & Paid Tools',
     template: '%s | VoiceNative Directory',
   },
   description:
-    'Browse 100+ curated voice-native apps across 10+ categories. Compare features, pricing, and platforms to find the best voice-first app for your needs.',
+    'Browse 100+ curated voice-native apps across 10+ categories. Compare features, pricing, and platforms. Find the best free and paid voice-first tools for your needs.',
   keywords: [
     'voice apps',
     'voice-native',
@@ -46,17 +46,15 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'en_US',
     siteName: 'VoiceNative Directory',
-    title: 'VoiceNative Directory - Find the Best Voice-First Apps (2026)',
+    title: 'Best Voice-First Apps Directory (2026) - Compare 100+ Free & Paid Tools',
     description:
-      'Browse 100+ curated voice-native apps across 10+ categories. Compare features, pricing, and platforms to find the best voice-first app for your needs.',
-    images: [{ url: '/og-default.png', width: 1200, height: 630, alt: 'VoiceNative Directory' }],
+      'Browse 100+ curated voice-native apps across 10+ categories. Compare features, pricing, and platforms. Find the best free and paid voice-first tools for your needs.',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'VoiceNative Directory - Find the Best Voice-First Apps (2026)',
+    title: 'Best Voice-First Apps Directory (2026) - Compare 100+ Free & Paid Tools',
     description:
-      'Browse 100+ curated voice-native apps across 10+ categories. Compare features, pricing, and platforms to find the best voice-first app for your needs.',
-    images: ['/og-default.png'],
+      'Browse 100+ curated voice-native apps across 10+ categories. Compare features, pricing, and platforms. Find the best free and paid voice-first tools for your needs.',
   },
   robots: {
     index: true,

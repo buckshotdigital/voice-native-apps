@@ -65,6 +65,8 @@ export function generateSoftwareApplicationSchema(
     price: app.pricing_model === 'free' ? '0' : '',
     priceCurrency: 'USD',
     category: pricingLabel,
+    availability: 'https://schema.org/InStock',
+    url: `${SITE_URL}/apps/${app.slug}`,
   };
   if (app.pricing_model === 'free') {
     offers.price = '0';

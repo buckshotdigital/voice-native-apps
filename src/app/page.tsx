@@ -25,9 +25,9 @@ export async function generateMetadata(): Promise<Metadata> {
 
   return {
     title: {
-      absolute: `${appCount}+ Voice-First Apps - Browse the VoiceNative Directory (2026)`,
+      absolute: `Best ${appCount}+ Voice Apps in ${catCount} Categories (2026) - Free Directory`,
     },
-    description: `Discover ${appCount}+ curated voice-native apps across ${catCount} categories. Compare voice assistants, smart home apps, AI tools, and more. Find the perfect voice-first app today.`,
+    description: `Discover ${appCount}+ curated voice-native apps across ${catCount} categories. Voice assistants, smart home apps, AI tools, and more. Compare features side-by-side and find your perfect voice app.`,
     alternates: { canonical: '/' },
   };
 }
