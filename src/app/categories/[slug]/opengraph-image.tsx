@@ -1,10 +1,18 @@
 import { ImageResponse } from 'next/og';
-import { createClient } from '@supabase/supabase-js';
+import {
+  getCategories,
+  getCategoryBySlug,
+  getCategoryApps,
+  countAppsInCategory,
+} from '@/lib/catalog';
 
-export const runtime = 'edge';
 export const alt = 'Voice App Category';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
+
+export function generateStaticParams() {
+  return getCategories().map((cat) => ({ slug: cat.slug }));
+}
 
 export default async function OGImage({
   params,
@@ -12,16 +20,7 @@ export default async function OGImage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-  );
-
-  const { data: category } = await supabase
-    .from('categories')
-    .select('name, id')
-    .eq('slug', slug)
-    .single();
+  const category = getCategoryBySlug(slug);
 
   if (!category) {
     return new ImageResponse(
@@ -46,21 +45,8 @@ export default async function OGImage({
     );
   }
 
-  const { count: appCount } = await supabase
-    .from('apps')
-    .select('*', { count: 'exact', head: true })
-    .eq('status', 'approved')
-    .eq('category_id', category.id);
-
-  const { data: topApps } = await supabase
-    .from('apps')
-    .select('name')
-    .eq('status', 'approved')
-    .eq('category_id', category.id)
-    .order('upvote_count', { ascending: false })
-    .limit(4);
-
-  const appNames = (topApps || []).map((a) => a.name);
+  const appCount = countAppsInCategory(category.id);
+  const appNames = getCategoryApps(category.id, 4).map((a) => a.name);
 
   return new ImageResponse(
     (
@@ -106,7 +92,7 @@ export default async function OGImage({
             marginBottom: '12px',
           }}
         >
-          {category.name} Voice Apps
+          {`${category.name} Voice Apps`}
         </div>
 
         {/* App count */}
@@ -118,7 +104,7 @@ export default async function OGImage({
             marginBottom: '40px',
           }}
         >
-          {appCount || 0} apps listed
+          {`${appCount} apps listed`}
         </div>
 
         {/* Top apps */}

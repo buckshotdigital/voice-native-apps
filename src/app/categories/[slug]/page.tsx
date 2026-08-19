@@ -1,6 +1,11 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { createClient } from '@/lib/supabase/server';
+import {
+  getCategories,
+  getCategoryBySlug,
+  getCategoryApps,
+  countAppsInCategory,
+} from '@/lib/catalog';
 import AppGrid from '@/components/apps/AppGrid';
 import CategoryIcon from '@/components/ui/CategoryIcon';
 import { ArrowRight } from 'lucide-react';
@@ -15,28 +20,21 @@ import {
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://voicenativeapps.com';
 
+export function generateStaticParams() {
+  return getCategories().map((cat) => ({ slug: cat.slug }));
+}
+
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const supabase = await createClient();
-  const { data: category } = await supabase
-    .from('categories')
-    .select('name, description, id')
-    .eq('slug', slug)
-    .single();
+  const category = getCategoryBySlug(slug);
 
   if (!category) return { title: 'Category Not Found' };
 
-  const { count: appCount } = await supabase
-    .from('apps')
-    .select('*', { count: 'exact', head: true })
-    .eq('status', 'approved')
-    .eq('category_id', category.id);
-
-  const count = appCount || 0;
+  const count = countAppsInCategory(category.id);
   const title = count > 0
     ? `Top ${count} ${category.name} Voice Apps (2026) - Compare Free & Paid`
     : `${category.name} Voice Apps (2026) - Compare Free & Paid`;
@@ -55,64 +53,17 @@ export default async function CategoryPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const supabase = await createClient();
-
-  const { data: category } = await supabase
-    .from('categories')
-    .select('*')
-    .eq('slug', slug)
-    .single();
+  const category = getCategoryBySlug(slug);
 
   if (!category) notFound();
 
-  // Get app count for this category
-  const { count: appCount } = await supabase
-    .from('apps')
-    .select('*', { count: 'exact', head: true })
-    .eq('status', 'approved')
-    .eq('category_id', category.id);
-
-  // Get top 12 apps in this category
-  const { data: apps } = await supabase
-    .from('apps')
-    .select('*, category:categories(*)')
-    .eq('status', 'approved')
-    .eq('category_id', category.id)
-    .order('upvote_count', { ascending: false })
-    .limit(12);
-
-  // Get current user + their upvotes/interests
-  const { data: { user } } = await supabase.auth.getUser();
-  let userUpvotedIds = new Set<string>();
-  let userInterestedIds = new Set<string>();
-  if (user && apps && apps.length > 0) {
-    const appIds = apps.map((a) => a.id);
-    const { data: upvotes } = await supabase
-      .from('upvotes')
-      .select('app_id')
-      .eq('user_id', user.id)
-      .in('app_id', appIds);
-    if (upvotes) {
-      userUpvotedIds = new Set(upvotes.map((u) => u.app_id));
-    }
-
-    const comingSoonIds = apps.filter((a) => a.is_coming_soon).map((a) => a.id);
-    if (comingSoonIds.length > 0) {
-      const { data: interests } = await supabase
-        .from('app_interests')
-        .select('app_id')
-        .eq('user_id', user.id)
-        .in('app_id', comingSoonIds);
-      if (interests) {
-        userInterestedIds = new Set(interests.map((i) => i.app_id));
-      }
-    }
-  }
+  const appCount = countAppsInCategory(category.id);
+  const apps = getCategoryApps(category.id, 12);
 
   // Build FAQ data
-  const topApps = (apps || []).slice(0, 3).map((a) => a.name);
-  const freeApps = (apps || []).filter((a) => a.pricing_model === 'free' || a.pricing_model === 'freemium');
-  const allPlatforms = new Set((apps || []).flatMap((a) => a.platforms));
+  const topApps = apps.slice(0, 3).map((a) => a.name);
+  const freeApps = apps.filter((a) => a.pricing_model === 'free' || a.pricing_model === 'freemium');
+  const allPlatforms = new Set(apps.flatMap((a) => a.platforms));
   const platformNames = Array.from(allPlatforms)
     .map((p: string) => PLATFORMS.find((pl) => pl.value === p)?.label)
     .filter(Boolean);
@@ -144,7 +95,7 @@ export default async function CategoryPage({
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(generateCollectionPageSchema(appCount || 0, category.name)),
+          __html: JSON.stringify(generateCollectionPageSchema(appCount, category.name)),
         }}
       />
       <script
@@ -159,7 +110,7 @@ export default async function CategoryPage({
           ),
         }}
       />
-      {apps && apps.length > 0 && (
+      {apps.length > 0 && (
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -191,7 +142,7 @@ export default async function CategoryPage({
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-foreground">{category.name}</h1>
             <p className="mt-0.5 text-[14px] text-muted">
-              {appCount || 0} voice-native app{appCount !== 1 ? 's' : ''}
+              {appCount} voice-native app{appCount !== 1 ? 's' : ''}
             </p>
           </div>
         </div>
@@ -204,15 +155,12 @@ export default async function CategoryPage({
 
       {/* Apps */}
       <AppGrid
-        apps={apps || []}
+        apps={apps}
         emptyMessage={`No apps in ${category.name} yet.`}
-        userId={user?.id}
-        userUpvotedIds={userUpvotedIds}
-        userInterestedIds={userInterestedIds}
       />
 
       {/* View all link */}
-      {(appCount || 0) > 12 && (
+      {appCount > 12 && (
         <div className="mt-10 text-center">
           <Link
             href={`/apps?category=${slug}`}

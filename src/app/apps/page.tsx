@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import { createClient } from '@/lib/supabase/server';
+import { getCategories, browseApps, totalAppCount } from '@/lib/catalog';
 import AppGrid from '@/components/apps/AppGrid';
 import SearchBar from '@/components/search/SearchBar';
 import FilterPanel from '@/components/search/FilterPanel';
@@ -35,12 +35,7 @@ export async function generateMetadata({
   if (params.platform) parts.push(params.platform);
   if (params.pricing) parts.push(params.pricing);
 
-  const supabase = await createClient();
-  const { count: totalCount } = await supabase
-    .from('apps')
-    .select('*', { count: 'exact', head: true })
-    .eq('status', 'approved');
-  const appTotal = totalCount || 100;
+  const appTotal = totalAppCount();
 
   const description = hasFilters
     ? `Browse voice-native apps filtered by ${parts.join(', ')}. Compare features, pricing, and platforms.`
@@ -64,83 +59,10 @@ export default async function BrowseAppsPage({
   searchParams: Promise<SearchParams>;
 }) {
   const params = await searchParams;
-  const supabase = await createClient();
+  const categories = getCategories();
 
-  const { data: categories } = await supabase
-    .from('categories')
-    .select('*')
-    .order('display_order');
-
-  let query = supabase
-    .from('apps')
-    .select('*, category:categories(*)', { count: 'exact' })
-    .eq('status', 'approved');
-
-  if (params.q) {
-    const q = `%${params.q}%`;
-    query = query.or(`name.ilike.${q},tagline.ilike.${q}`);
-  }
-
-  if (params.category) {
-    const cat = categories?.find((c) => c.slug === params.category);
-    if (cat) query = query.eq('category_id', cat.id);
-  }
-
-  if (params.platform) {
-    query = query.contains('platforms', [params.platform]);
-  }
-
-  if (params.pricing) {
-    query = query.eq('pricing_model', params.pricing);
-  }
-
-  switch (params.sort) {
-    case 'popular':
-      query = query.order('upvote_count', { ascending: false });
-      break;
-    case 'name':
-      query = query.order('name', { ascending: true });
-      break;
-    default:
-      query = query.order('created_at', { ascending: false });
-      break;
-  }
-
-  const page = Math.max(1, parseInt(params.page || '1'));
   const perPage = 12;
-  const from = (page - 1) * perPage;
-  query = query.range(from, from + perPage - 1);
-
-  const { data: apps, count } = await query;
-  const totalPages = Math.ceil((count || 0) / perPage);
-
-  // Get current user + their upvotes/interests for displayed apps
-  const { data: { user } } = await supabase.auth.getUser();
-  let userUpvotedIds = new Set<string>();
-  let userInterestedIds = new Set<string>();
-  if (user && apps && apps.length > 0) {
-    const appIds = apps.map((a) => a.id);
-    const { data: upvotes } = await supabase
-      .from('upvotes')
-      .select('app_id')
-      .eq('user_id', user.id)
-      .in('app_id', appIds);
-    if (upvotes) {
-      userUpvotedIds = new Set(upvotes.map((u) => u.app_id));
-    }
-
-    const comingSoonIds = apps.filter((a) => a.is_coming_soon).map((a) => a.id);
-    if (comingSoonIds.length > 0) {
-      const { data: interests } = await supabase
-        .from('app_interests')
-        .select('app_id')
-        .eq('user_id', user.id)
-        .in('app_id', comingSoonIds);
-      if (interests) {
-        userInterestedIds = new Set(interests.map((i) => i.app_id));
-      }
-    }
-  }
+  const { apps, count, page, totalPages } = browseApps(params, perPage);
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
@@ -148,7 +70,7 @@ export default async function BrowseAppsPage({
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(generateCollectionPageSchema(count || 0)),
+          __html: JSON.stringify(generateCollectionPageSchema(count)),
         }}
       />
       <script
@@ -166,7 +88,7 @@ export default async function BrowseAppsPage({
       <div className="mb-8">
         <h1 className="text-2xl font-bold tracking-tight text-foreground">Directory</h1>
         <p className="mt-1 text-[14px] text-muted">
-          {count || 0} voice-native app{count !== 1 ? 's' : ''}
+          {count} voice-native app{count !== 1 ? 's' : ''}
         </p>
       </div>
 
@@ -174,7 +96,7 @@ export default async function BrowseAppsPage({
         {/* Sidebar */}
         <aside className="w-full flex-shrink-0 lg:w-52">
           <Suspense fallback={null}>
-            <FilterPanel categories={categories || []} />
+            <FilterPanel categories={categories} />
           </Suspense>
         </aside>
 
@@ -191,7 +113,7 @@ export default async function BrowseAppsPage({
             </Suspense>
           </div>
 
-          <AppGrid apps={apps || []} emptyMessage="No apps match your search." userId={user?.id} userUpvotedIds={userUpvotedIds} userInterestedIds={userInterestedIds} />
+          <AppGrid apps={apps} emptyMessage="No apps match your search." />
 
           {/* Pagination */}
           {totalPages > 1 && (

@@ -1,25 +1,13 @@
 import { ImageResponse } from 'next/og';
-import { createClient } from '@supabase/supabase-js';
+import { totalAppCount, getCategories } from '@/lib/catalog';
 
-export const runtime = 'edge';
 export const alt = 'VoiceNative Directory - Best Voice-First Apps';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
-export default async function OGImage() {
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-  );
-
-  const { count: appCount } = await supabase
-    .from('apps')
-    .select('*', { count: 'exact', head: true })
-    .eq('status', 'approved');
-
-  const { count: categoryCount } = await supabase
-    .from('categories')
-    .select('*', { count: 'exact', head: true });
+export default function OGImage() {
+  const appCount = totalAppCount();
+  const categoryCount = getCategories().length;
 
   return new ImageResponse(
     (
@@ -70,6 +58,8 @@ export default async function OGImage() {
 
         <div
           style={{
+            display: 'flex',
+            flexDirection: 'column',
             fontSize: '56px',
             fontWeight: 700,
             color: 'white',
@@ -78,9 +68,8 @@ export default async function OGImage() {
             marginBottom: '32px',
           }}
         >
-          Discover the Best
-          <br />
-          Voice-First Apps
+          <span>Discover the Best</span>
+          <span>Voice-First Apps</span>
         </div>
 
         <div

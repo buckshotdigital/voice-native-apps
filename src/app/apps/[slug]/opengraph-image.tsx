@@ -1,11 +1,14 @@
 import { ImageResponse } from 'next/og';
-import { createClient } from '@supabase/supabase-js';
+import { getAppBySlug, getAllApps } from '@/lib/catalog';
 import { PLATFORMS, PRICING_MODELS } from '@/lib/constants';
 
-export const runtime = 'edge';
 export const alt = 'Voice App Details';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
+
+export function generateStaticParams() {
+  return getAllApps().map((app) => ({ slug: app.slug }));
+}
 
 export default async function OGImage({
   params,
@@ -13,17 +16,7 @@ export default async function OGImage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-  );
-
-  const { data: app } = await supabase
-    .from('apps')
-    .select('name, tagline, pricing_model, platforms, category:categories(name)')
-    .eq('slug', slug)
-    .eq('status', 'approved')
-    .single();
+  const app = getAppBySlug(slug);
 
   if (!app) {
     return new ImageResponse(
@@ -58,8 +51,7 @@ export default async function OGImage({
 
   const pricingColor = app.pricing_model === 'free' ? '#22c55e' : app.pricing_model === 'freemium' ? '#3b82f6' : '#f59e0b';
 
-  const categoryArr = app.category as { name: string }[] | null;
-  const category = categoryArr?.[0] ?? null;
+  const category = app.category ?? null;
 
   return new ImageResponse(
     (

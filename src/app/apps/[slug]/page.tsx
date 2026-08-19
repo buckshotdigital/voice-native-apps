@@ -1,13 +1,10 @@
 import { notFound } from 'next/navigation';
 
 import Link from 'next/link';
-import { createClient } from '@/lib/supabase/server';
+import { getAppBySlug, getAllApps, getAppTags } from '@/lib/catalog';
 import PlatformBadges from '@/components/apps/PlatformBadges';
 import PricingBadge from '@/components/apps/PricingBadge';
 import ScreenshotCarousel from '@/components/apps/ScreenshotCarousel';
-import UpvoteButton from '@/components/ui/UpvoteButton';
-import InterestButton from '@/components/ui/InterestButton';
-import ReportDialog from '@/components/ui/ReportDialog';
 import AppLogo from '@/components/ui/AppLogo';
 import { formatDate } from '@/lib/utils';
 import { PLATFORMS, PRICING_MODELS } from '@/lib/constants';
@@ -29,19 +26,17 @@ import type { Metadata } from 'next';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://voicenativeapps.com';
 
+export function generateStaticParams() {
+  return getAllApps().map((app) => ({ slug: app.slug }));
+}
+
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const supabase = await createClient();
-  const { data: app } = await supabase
-    .from('apps')
-    .select('name, tagline, logo_url, platforms, voice_features, pricing_model')
-    .eq('slug', slug)
-    .eq('status', 'approved')
-    .single();
+  const app = getAppBySlug(slug);
 
   if (!app) return { title: 'App Not Found' };
 
@@ -70,50 +65,11 @@ export default async function AppDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const supabase = await createClient();
-
-  const { data: app } = await supabase
-    .from('apps')
-    .select('*, category:categories(*)')
-    .eq('slug', slug)
-    .eq('status', 'approved')
-    .single();
+  const app = getAppBySlug(slug);
 
   if (!app) notFound();
 
-  // Get tags
-  const { data: appTags } = await supabase
-    .from('app_tags')
-    .select('tag_id, tags(name, slug)')
-    .eq('app_id', app.id);
-
-  // Get current user and upvote/interest status
-  const { data: { user } } = await supabase.auth.getUser();
-  let hasUpvoted = false;
-  let hasInterested = false;
-  if (user) {
-    const { data: upvote } = await supabase
-      .from('upvotes')
-      .select('user_id')
-      .eq('user_id', user.id)
-      .eq('app_id', app.id)
-      .maybeSingle();
-    hasUpvoted = !!upvote;
-
-    if (app.is_coming_soon) {
-      const { data: interest } = await supabase
-        .from('app_interests')
-        .select('user_id')
-        .eq('user_id', user.id)
-        .eq('app_id', app.id)
-        .maybeSingle();
-      hasInterested = !!interest;
-    }
-  }
-
-  // Increment view count (best-effort, non-blocking)
-  // Use optimistic locking to avoid race conditions
-  supabase.from('apps').update({ view_count: (app.view_count || 0) + 1 }).eq('id', app.id).eq('view_count', app.view_count).then(() => {});
+  const appTags = getAppTags(app);
 
   // Build GEO fact-summary data
   const platformLabels = app.platforms
@@ -269,18 +225,14 @@ export default async function AppDetailPage({
             <div className="mt-8">
               <h2 className="mb-3 text-lg font-semibold text-gray-900">Tags</h2>
               <div className="flex flex-wrap gap-2">
-                {appTags.map((at: Record<string, unknown>) => {
-                  const tag = at.tags as { name: string; slug: string } | null;
-                  if (!tag) return null;
-                  return (
-                    <span
-                      key={at.tag_id as string}
-                      className="rounded-full bg-gray-100 px-3 py-1 text-sm text-gray-600"
-                    >
-                      #{tag.name}
-                    </span>
-                  );
-                })}
+                {appTags.map((tag) => (
+                  <span
+                    key={tag.slug}
+                    className="rounded-full bg-gray-100 px-3 py-1 text-sm text-gray-600"
+                  >
+                    #{tag.name}
+                  </span>
+                ))}
               </div>
             </div>
           )}
@@ -309,12 +261,6 @@ export default async function AppDetailPage({
           <div className="rounded-xl border border-gray-200 bg-white p-5">
             {app.is_coming_soon ? (
               <div className="space-y-3">
-                <InterestButton
-                  appId={app.id}
-                  initialCount={app.interest_count}
-                  initialInterested={hasInterested}
-                  userId={user?.id || null}
-                />
                 <a
                   href={app.website_url}
                   target="_blank"
@@ -385,17 +331,6 @@ export default async function AppDetailPage({
             )}
           </div>
 
-          {/* Upvote & Report */}
-          <div className="flex items-center gap-3">
-            <UpvoteButton
-              appId={app.id}
-              initialCount={app.upvote_count}
-              initialUpvoted={hasUpvoted}
-              userId={user?.id || null}
-            />
-            <ReportDialog appId={app.id} userId={user?.id || null} />
-          </div>
-
           {/* Stats */}
           <div className="rounded-xl border border-gray-200 bg-white p-5">
             <h3 className="text-sm font-semibold text-gray-900">Stats</h3>
@@ -409,10 +344,6 @@ export default async function AppDetailPage({
               <div className="flex justify-between">
                 <dt className="text-gray-500">Upvotes</dt>
                 <dd className="font-medium text-gray-900">{app.upvote_count}</dd>
-              </div>
-              <div className="flex justify-between">
-                <dt className="text-gray-500">Views</dt>
-                <dd className="font-medium text-gray-900">{app.view_count}</dd>
               </div>
               <div className="flex justify-between">
                 <dt className="text-gray-500">Listed</dt>
